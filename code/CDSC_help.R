@@ -2,7 +2,6 @@
 #--------the first step of QC--------------
 QC_first <- function(data, full_phenoData){#
   require(dplyr); require(Matrix)
-  # ???????���:???Ŀ???С????��?????????庬��????????MAD??ϸ??????
   filterCells <- function(filterParam){
     cellsToRemove <- which(filterParam > median(filterParam) + 3 * mad(filterParam) | filterParam < median(filterParam) - 3 * mad(filterParam) )
     cellsToRemove
@@ -20,9 +19,8 @@ QC_first <- function(data, full_phenoData){#
     data <- data[,-cellsToRemove]
     full_phenoData <- full_phenoData[-cellsToRemove,]#
   }
-  # Keep only "detectable" genes: at least 5% of cells (regardless of the group) have a read/UMI count different from 0
-  #ֻ???����ɼ????ġ?????:????5%??ϸ??(??????????һ??)?Ķ?/UMI??????ͬ??0
-  keep <- which(Matrix::rowSums(data > 0) >= round(0.05 * ncol(data)))#8415
+  
+  keep <- which(Matrix::rowSums(data > 0) >= round(0.05 * ncol(data)))
   data = data[keep,]
   
  list(data = data, phenoData=full_phenoData)
@@ -60,6 +58,8 @@ Split_data <- function(data, pData,cell_counts){
   test <- data[,testing]
   return(list(train=train, test=test, pData_train=pData_train, pData_test=pData_test, training=training, testing=testing))
 }
+
+#--------Normalization--------------
 Normalization <- function(data){
   
   data <- edgeR::DGEList(data)
@@ -118,13 +118,9 @@ Find_markerGene_limma <- function(train,plotmarker = F,norm1 = "TMM",log2.thresh
   fit2 <- limma::contrasts.fit(fit, cont.matrix)# 
   # contrasts.fit?Ƚ?ÿ??????
   fit2 <- limma::eBayes(fit2, trend=TRUE)
-  # ??׼?????ľ??鱴Ҷ˹ƽ?????????????????ı?׼????????С?ö??ı?׼??????С??ƽ????׼???
-  # plotSA(fit2, main="Final model: Mean-variance trend")
-  # ??ͼ
-  
-  # topTable ?г????????????? 
-  # tT=topTable(fit2,adjust='BH',coef=1:ncol(fit2$coefficients),number=Inf,p.value=1) ##p.value?Լ?????
-  tT=topTable(fit2,adjust='fdr',coef=1,number=Inf,p.value=1) ##p.value?Լ?????
+
+  # tT=topTable(fit2,adjust='BH',coef=1:ncol(fit2$coefficients),number=Inf,p.value=1) 
+  tT=topTable(fit2,adjust='fdr',coef=1,number=Inf,p.value=1) 
   tT = subset(tT, select=c("adj.P.Val","P.Value","logFC"))
   colnames(tT)=c("FDR","P.Value","logFC")
   tT$GENEs=rownames(tT)
@@ -141,9 +137,8 @@ Find_markerGene_limma <- function(train,plotmarker = F,norm1 = "TMM",log2.thresh
 marker.fc <- function(fit2, log2.threshold = 1, output_name = "markers"){
   # log2FC > 1 && p.values < 0.1 && FDR < 0.1
   topTable_RESULTS = limma::topTable(fit2, coef = 1:ncol(fit2$coefficients), number = Inf, adjust.method = "BH", p.value = 0.1, lfc = log2.threshold)
-  # FDR ???㲢??ȡ
-  AveExpr_pval <- topTable_RESULTS[,(ncol(topTable_RESULTS)-3):ncol(topTable_RESULTS)]#??ȡ????????
-  topTable_RESULTS <- topTable_RESULTS[,1:(ncol(topTable_RESULTS)-4)]#??ȡǰcellTypeNum??
+  AveExpr_pval <- topTable_RESULTS[,(ncol(topTable_RESULTS)-3):ncol(topTable_RESULTS)]
+  topTable_RESULTS <- topTable_RESULTS[,1:(ncol(topTable_RESULTS)-4)]
   
   if(length(grep("ERCC-",topTable_RESULTS$gene)) > 0){ 
     topTable_RESULTS <- topTable_RESULTS[-grep("ERCC-",topTable_RESULTS$gene),] }
@@ -151,7 +146,6 @@ marker.fc <- function(fit2, log2.threshold = 1, output_name = "markers"){
   markers <- apply(topTable_RESULTS,1,function(x){
     temp = sort(x)
     ((temp[ncol(topTable_RESULTS)] - temp[ncol(topTable_RESULTS)-1]) >= log2.threshold) | (abs(temp[1] - temp[2]) >= log2.threshold)
-    # ????????????ǰ��???Ĳ??��???Ĳ????log2.threshold
   })
   topTable_RESULTS = topTable_RESULTS[markers,]
   
@@ -159,10 +153,8 @@ marker.fc <- function(fit2, log2.threshold = 1, output_name = "markers"){
                               t(apply(topTable_RESULTS, 1, function(x){
                                 temp = max(x)
                                 if(temp < log2.threshold){
-                                  #????tempС??log2.threshold??ȡ??С??
                                   temp = c(min(x),colnames(topTable_RESULTS)[which.min(x)])
                                 } else {
-                                  #????temp????log2.threshold??ȡ??????
                                   temp = c(max(x),colnames(topTable_RESULTS)[which.max(x)])
                                 } 
                                 temp
@@ -202,7 +194,7 @@ Get_C <- function(train){
   return(list(C_ref=C_ref, refProfiles.var=refProfiles.var))
 }
 
-#--------Compose T、P matrix ------------
+#--------Compose T matrix ------------
 Generator <- function(sce, phenoData, Num.mixtures = 1000, pool.size = 100, min.percentage = 1, max.percentage = 99, seed = 24){ 
   
   CT = unique(phenoData$cellType)
@@ -365,7 +357,7 @@ combine_2 <- function(RESULTS,P){
   return(RESULTS)
 }
 
-#-------calculate the RMSE and Pearson
+#-------calculate the RMSE and Pearson-----
 getPearsonRMSE <- function(RESULTS,P){
   library(dplyr)
   RESULTS = combine_2(RESULTS,P)
@@ -393,8 +385,7 @@ Row_label <- function(result_c, C_ref, leastnum){
     num = k- 3
     Row_label = matrix(1:k,1,k)
     colnames_X = colnames(X)
-    for (j in 1:num) {#先按大小赋值前k-3个最后3个再穷举
-      # location <- Row_label_location(which(X==max(X),arr.ind=T),X,k)#????????
+    for (j in 1:num) {
       location <- which(X==max(X),arr.ind=T)#????????
       Row_label[location[1]] = colnames_X[location[2]]
       X[location[1],] = -1
@@ -404,7 +395,6 @@ Row_label <- function(result_c, C_ref, leastnum){
     vacant_y_1 <- colnames(X)[which(!( colnames(X) %in% Row_label))]
     vacant_x_1 <- which(!(Row_label %in% colnames(X)))
   }else if(ncol(C_ref) <= 3){
-    #细胞类型数目大于等于1，小于等于三
     Row_label = matrix(1:k,1,k)
     Row_label_all = NULL
     vacant_y_1 <- colnames(X)
@@ -436,7 +426,6 @@ Row_label <- function(result_c, C_ref, leastnum){
   }
   i = which.max(ans)
   Row_label_end = Row_label_all[[i]]
-  #?Ƚ????Կ??ܽ????? ????ֵ???õ????????ŵ?label????????Row_label_end
   
 
   return(Row_label_end)
@@ -637,7 +626,7 @@ MergeCellType <- function(result_p,matrix = 'p'){
 }
 #-------------simulate-----------
 QCscDATA <- function(scData, leastNum=50){
-  #this function donnot split data, but simulate T、P
+  #this function donnot split data, but simulate T
   #------------QC_1------------
   table(scData$full_phenoData$cellType)
   scData_QC <- QC_first(scData$data, scData$full_phenoData)
@@ -651,7 +640,7 @@ QCscDATA <- function(scData, leastNum=50){
 #-------------simulate C-----------
 scSimulateC <- function(scData, leastNum=50, plotmarker = F,
                         norm1 = "CPM",log2.threshold=log2(2)){
-  #this function donnot split data, but simulate T、P
+  #this function donnot split data, but simulate T
   # ------------QC_1------------
   table(scData$full_phenoData$cellType)
   scData_simualte <- QC_first(scData$data, scData$full_phenoData)
@@ -807,17 +796,8 @@ BulkMixturesShift <- function(bulkData, marker_strategy = "all"){
 Combine_2scdata_dream <- function(scData_1,scData_2,leastNum1=50,leastNum2=50, plotmarker = F,
                                   Num.mixtures = 1000, pool.size = 100,
                                   norm1 = "CPM", norm2 = "CPM",log2.threshold=1){
-  #' @param scDATA_1是测试集，用于仿真生成bulk矩阵
-  #' @param scDATA_2是训练集，用于产生参考C和求取markerGene
-  #' @param leastNum1是测试集QC时保留的细胞类型的最小细胞数目
-  #' @param leastNum2是训练集QC时保留的细胞类型的最小细胞数目
-  #' @param plotmarker是训练集寻找markerGene时是否画拟合图像
-  #' @param Num.mixtures是最终的bulkData的样本数目，也是仿真的抽样次数
-  #' @param pool.size是每次仿真抽样的容积
-  #' @param norm1对测试集结果标准化
-  #' @param norm2对训练集结果标准化
+
   ComDate=NULL
-  # 质量控制
   ComDate <- list(
     scData_1 = scData_1,
     Test = QCscDATA(scData_1,leastNum1),
@@ -825,7 +805,6 @@ Combine_2scdata_dream <- function(scData_1,scData_2,leastNum1=50,leastNum2=50, p
     Train = QCscDATA(scData_2,leastNum2)
     )
   
-  # 理想情况下匹配gene和celltype
   cat( "The number of genes matching TrainSet and TestSet:",
          length(intersect(rownames(ComDate$Test$data), rownames(ComDate$Train$data))))
   cat( "\nCelltypes matching TrainSet and TestSet:",
@@ -846,7 +825,7 @@ Combine_2scdata_dream <- function(scData_1,scData_2,leastNum1=50,leastNum2=50, p
   ComDate$Train$pData <- ComDate$Train$pData[keepTrainCell,]
   ComDate$Train$original_cell_names <- ComDate$Train$original_cell_names[keepTrainCell]
   
-  # 寻找marker Gene
+  # marker Gene
   ComDate$markers <- Find_markerGene_limma(ComDate$Train$data, plotmarker,norm2,log2.threshold)
   cat("\nDifferent celltypes's marker Gene number of RAW:");print(sort(table(ComDate$markers$CT)))
   ComDate$df = which(ComDate$markers$FDR <= 0.1 & ComDate$markers$P.value<0.1)
@@ -877,13 +856,13 @@ Combine_2scdata_dream <- function(scData_1,scData_2,leastNum1=50,leastNum2=50, p
   ComDate$indata$C <- ComDate$C[gene_,ct_]
   ComDate$indata$P <- ComDate$P[ct_,]
   
-  # for T,P :shift samples,,,,,,没有涉及到样本情况的改变，事实上
+  # for T,P :shift samples,,,,,,
   # ComDate$indata$P <- NORM(ComDate$indata$P)
   # cat("\nReal P's sample numbers after shift ct:",length(which(colSums(ComDate$indata$P) != 0)))
   # ComDate$indata$P <- ComDate$indata$P[, which(colSums(ComDate$indata$P) != 0)]
   # ComDate$indata$T <- ComDate$indata$T[, colnames(ComDate$P)]
 
-  # CPM标准化
+  # CPM
   library(scater)
   if(norm1 %in% c("cpm","CPM")){
       ComDate$indata$T <- as.matrix(calculateCPM(ComDate$indata$T))
@@ -907,7 +886,7 @@ Combine_2scdata_dream <- function(scData_1,scData_2,leastNum1=50,leastNum2=50, p
 CutCTofscDATA <- function(data,cutCT=c("unknown")){
   library(dplyr)
   if(cutCT %in% unique(data$pData$cellType)){
-    # 存在需要删除的细胞类型
+    # 
     keepCell <- which(data$pData$cellType != cutCT);length(keepCell)
     data$pData <- data$pData[keepCell,]
     data$data <- data$data[,keepCell]
@@ -927,17 +906,18 @@ CutCTofscDATA <- function(data,cutCT=c("unknown")){
 Combine_2scdata_hard <- function(scData_1,scData_2,leastNum1=50,leastNum2=50, plotmarker = F,
                                  Num.mixtures = 1000, pool.size = 100,cutCT=c("unknown"),
                                  norm1 = 'CPM', norm2 = 'CPM',log2.threshold=1){
-  #' @param scDATA_1是测试集，用于仿真生成bulk矩阵
-  #' @param scDATA_2是训练集，用于产生参考C和求取markerGene
-  #' @param leastNum1是测试集QC时保留的细胞类型的最小细胞数目
-  #' @param leastNum2是训练集QC时保留的细胞类型的最小细胞数目
-  #' @param plotmarker是训练集寻找markerGene时是否画拟合图像
-  #' @param Num.mixtures是最终的bulkData的样本数目，也是仿真的抽样次数
-  #' @param pool.size是每次仿真抽样的容积
-  #' @param norm1对测试集结果标准化
-  #' @param norm2对训练集结果标准化
+
+  #' @param scDATA_ 1 is a test set for simulating the generation of bulk matrices
+  #' @param scDATA_ 2 is a training set used to generate reference C and obtain markerGene
+  #' @param leastNum1 is the minimum number of cell types retained during the QC test set
+  #' @param leastNum2 is the minimum number of cell types retained during the training set QC
+  #' @param plotmarker is whether to draw a fitted image when searching for markerGene in the training set
+  #' @param Num. mixtures is the number of samples for the final bulkData and the number of samples for simulation
+  #' @param pool.size is the volume of each simulation sample
+  #Standardize test set results @ param norm1
+  #Standardize the training set results with @ param norm2
   ComDate=NULL
-  # 质量控制
+  # 
   ComDate <- list(
     scData_1 = scData_1,
     Test = CutCTofscDATA(QCscDATA(scData_1,leastNum1),cutCT=c("unknown")),
@@ -945,7 +925,6 @@ Combine_2scdata_hard <- function(scData_1,scData_2,leastNum1=50,leastNum2=50, pl
     Train = CutCTofscDATA(QCscDATA(scData_2,leastNum2),cutCT=c("unknown"))
   )
   ComDate$Train <- CutCTofscDATA(ComDate$Train)
-  # 模拟真实情况下匹配gene，但是并不匹配celltype（事实上已知BULK数据的情况下，只有gene信息无celltype信息）
   cat( "The number of genes matching TrainSet and TestSet:",
        length(intersect(rownames(ComDate$Test$data), rownames(ComDate$Train$data))))
   cat( "\nCelltypes in TrainSet:"); print(table(ComDate$Train$pData$cellType))
@@ -963,7 +942,7 @@ Combine_2scdata_hard <- function(scData_1,scData_2,leastNum1=50,leastNum2=50, pl
   # ComDate$Train$pData <- ComDate$Train$pData[,]
   # ComDate$Train$original_cell_names <- ComDate$Train$original_cell_names[]
   
-  # 寻找marker Gene
+  # marker Gene
   ComDate$markers <- Find_markerGene_limma(ComDate$Train$data, plotmarker,norm2,log2.threshold)
   cat("\nDifferent celltypes's marker Gene number of RAW:");print(sort(table(ComDate$markers$CT)))
   # ComDate$df = which(ComDate$markers$FDR <= 0.1 & ComDate$markers$P.value<0.1)
@@ -995,7 +974,7 @@ Combine_2scdata_hard <- function(scData_1,scData_2,leastNum1=50,leastNum2=50, pl
   ComDate$indata$P <- ComDate$P
   
   
-  # CPM标准化
+  # CPM
   library(scater)
   if(norm1 %in% c("cpm","CPM")){
     ComDate$indata$T <- calculateCPM(as.matrix(ComDate$indata$T))
@@ -1046,65 +1025,7 @@ CountAllResults <- function(result,MyMethodName){
     }}
   
   rownames(result$all) <- c(myMatrixCref,myScCref,myNoCref)
-  # result$all <- result$CDSC3$result[4:9]
-  # result$all[2,] <- cbind(result$nnls$result, matrix(0,1,6-length(result$nnls$result)))
-  # result$all[3,] <- cbind(result$ols$result,matrix(0,1,6-length(result$ols$result)))
-  # result$all[4,] <- cbind(result$fardeep$result,matrix(0,1,6-length(result$fardeep$result)))
-  # result$all[5,] <- cbind(result$cibersort$result,matrix(0,1,6-length(result$cibersort$result)))
-  # result$all[6,] <- cbind(result$deconRNASeq$result,matrix(0,1,6-length(result$deconRNASeq$result)))
-  # result$all[7,] <- cbind(result$rlr$result,matrix(0,1,6-length(result$rlr$result)))
-  # result$all[8,] <- cbind(result$DCQ$result,matrix(0,1,6-length(result$DCQ$result)))
-  # result$all[9,] <- cbind(result$elastic_net$result,matrix(0,1,6-length(result$elastic_net$result)))
-  # result$all[10,] <- cbind(result$ridge$result,matrix(0,1,6-length(result$ridge$result)))
-  # result$all[11,] <- cbind(result$lasso$result,matrix(0,1,6-length(result$lasso$result)))
-  # result$all[12,] <- cbind(result$EPIC$result,matrix(0,1,6-length(result$EPIC$result)))
-  # 
-  # result$all[13,] <- cbind(result$MuSiC$result,matrix(0,1,6-length(result$MuSiC$result)))
-  # result$all[14,] <- cbind(result$BisqueRNA$result,matrix(0,1,6-length(result$BisqueRNA$result)))
-  # result$all[15,] <- cbind(result$deconvSeq$result,matrix(0,1,6-length(result$deconvSeq$result)))
-  # result$all[16,] <- cbind(result$SCDC$result,matrix(0,1,6-length(result$SCDC$result)))
-  # result$all[17,] <- cbind(result$DWLS$result,matrix(0,1,6-length(result$DWLS$result)))
-  #   
-  # result$all[18,] <- result$CDSC2$result[4:9]
-  # result$all[19,] <- cbind(result$dsa$result,matrix(0,1,6-length(result$dsa$result)))
-  # result$all[20,] <- cbind(result$sskl$result,matrix(0,1,6-length(result$sskl$result)))
-  # result$all[21,] <- cbind(result$ssFrobenius$result,matrix(0,1,6-length(result$ssFrobenius$result)))
-  # result$all[22,] <- cbind(result$deconf$result,matrix(0,1,6-length(result$deconf$result)))
-  # 
-  # result$all[23,] <- cbind(result$CDSeq$result,matrix(0,1,6-length(result$CDSeq$result)))
-  # result$all[24,] <- cbind(result$TOAST$result,matrix(0,1,6-length(result$TOAST$result)))
-  # result$all[25,] <- cbind(result$Linseed$result,matrix(0,1,6-length(result$Linseed$result)))
-  # result$all[26,] <- cbind(result$cd$result,matrix(0,1,6-length(result$cd$result)))
-  # 
-  # 
-  # rownames(result$all) <- c("CDSC3",
-  #                           "nnls",
-  #                           "ols",
-  #                           "fardeep",
-  #                           "cibersort",
-  #                           "deconRNASeq",
-  #                           "rlr",
-  #                           "DCQ",
-  #                           "elastic_net",
-  #                           "ridge",
-  #                           "lasso",
-  #                           "EPIC",
-  #                           
-  #                           "MuSiC",
-  #                           "BisqueRNA",
-  #                           "deconvSeq",
-  #                           "SCDC",
-  #                           "DWLS",
-  #                           
-  #                           "CDSC2",
-  #                           "dsa",
-  #                           "sskl",
-  #                           "ssFrobenius",
-  #                           "deconf",
-  #                           "CDSeq",
-  #                           "TOAST",
-  #                           "Linseed",
-  #                           "CellDistinguisher")
+  
   return(result)
 }
 

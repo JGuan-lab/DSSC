@@ -1,169 +1,4 @@
 
-# 1 scSimulated data sets, find the deconvolution results
-
-# ---
-# title: "1scDeconvolution"
-# author: "Chenqi Wang"
-# date: "2022/1/16"
-# output: html_document
-# ---
-# 
-
-#-----hunman pancreas ///-------------
-
-##
-#------read raw data information--------
-rm (list=ls ())
-setwd("F:/wangchenqi/CDSC/1scSimulate")
-set.seed(44)
-
-# Segerstolpe 人胰脏
-# Camp人脑
-# Darmanils人脑
-# Manno人脑
-# Nestorowa 鼠造血干细胞
-# 数据有：
-
-# STRING_name = Segerstolpe
-#-------------------------------
-# Segerstolpe <- list(
-#   data = readRDS("F:/wangchenqi/CDSC/dataset/Segerstolpe/process/arrange/sc_Segerstolpe.rds"),
-#   full_phenoData = readRDS("F:/wangchenqi/CDSC/dataset/Segerstolpe/process/arrange/Segerstolpe_phenoData.rds")
-# )
-# # 
-# Camp <- list(
-#   data = readRDS("F:/wangchenqi/CDSC/dataset/Camp/process/arrange/sc_Camp.rds"),
-#   full_phenoData = readRDS("F:/wangchenqi/CDSC/dataset/Camp/process/arrange/Camp_phenoData.rds")
-# )
-# # 
-# Darmanis <- list(
-#   data = readRDS("F:/wangchenqi/CDSC/dataset/Darmanis/process/arrange/sc_Darmanis.rds"),
-#   full_phenoData = readRDS("F:/wangchenqi/CDSC/dataset/Darmanis/process/arrange/Darmanis_phenoData.rds")
-# )
-# Manno <- list(
-#   data = readRDS("F:/wangchenqi/CDSC/dataset/Manno/process/arrange/sc_Manno.rds"),
-#   full_phenoData = readRDS("F:/wangchenqi/CDSC/dataset/Manno/process/arrange/Manno_phenoData.rds")
-# )
-# Nestorowa <- list(
-#   data = readRDS("F:/wangchenqi/CDSC/dataset/Nestorowa/process/arrange/sc_Nestorowa.rds"),
-#   full_phenoData = readRDS("F:/wangchenqi/CDSC/dataset/Nestorowa/process/arrange/Nestorowa_phenoData.rds")
-# )
-# Manno <- list(
-#   data = readRDS("F:/wangchenqi/CDSC/dataset/Manno/process/arrange/sc_Manno.rds"),
-#   full_phenoData = readRDS("F:/wangchenqi/CDSC/dataset/Manno/process/arrange/Manno_phenoData.rds")
-# )
-#------simulate--------
-source("F:/wangchenqi/CDSC/CDSC.R")
-source("F:/wangchenqi/CDSC/CDSC_expand.R")
-
-# #---Segerstolpe--
-# sort(table(Segerstolpe$full_phenoData$cellType))
-# # Segerstolpe$simualte <- scSimulate(Segerstolpe, leastNum=50, plotmarker = F)
-# Segerstolpe$simulate1 <- scSimulateSplit(Segerstolpe, 
-#                                          leastNum=50, plotmarker = F,
-#                                          norm1 = "CPM",log2.threshold = 1)
-# nrow(Segerstolpe$simulate1$markerslist)
-# table(Segerstolpe$simulate1$markerslist$CT)
-# Segerstolpe <- scSimulateShift(Segerstolpe,"all",standardization=TRUE)
-# Segerstolpe$simulate1$T["REG1A",1:5]
-# Segerstolpe$Indata$T["REG1A",1:5]
-# saveRDS(Segerstolpe,"F:/wangchenqi/CDSC/1scSimulate/dataSimulate/Segerstolpe.rds")
-# 
-# #---Camp--------
-# table(Camp$full_phenoData$cellType)
-# Camp$keep = which(Camp$full_phenoData$cellType != "Unknown")
-# Camp$full_phenoData <- Camp$full_phenoData[Camp$keep, ]
-# Camp$data <- Camp$data[,Camp$keep]
-# table(Camp$full_phenoData$cellType)
-# Camp$full_phenoData$cellType <- gsub(" ","_",Camp$full_phenoData$cellType)
-# table(Camp$full_phenoData$cellType)
-# # # Camp$simualte <- scSimulate(Camp, leastNum=20, plotmarker = F)
-# type(Camp$data)
-# # norm1 = "none" 表示找markerGene时，不做标准化
-# Camp$simulate1 <- scSimulateSplit(Camp,  
-#                                   leastNum=20,plotmarker = F,
-#                                   norm1 = "none",log2.threshold = log2(2))
-# # Camp$simulate1 <- scSimulateSplit(Camp, leastNum=20, plotmarker = F,norm1 = "cpm")
-# nrow(Camp$simulate1$markerslist)
-# table(Camp$simulate1$markerslist$CT);nrow(Camp$simulate1$markerslist)
-# # FALSE 表示对T\C\C_REF不做标准化
-# Camp <- scSimulateShift(Camp,"all",FALSE)
-# Camp$simulate1$T["RTN1",1:5]
-# Camp$Indata$T["RTN1",1:5]
-# saveRDS(Camp,"F:/wangchenqi/CDSC/1scSimulate/dataSimulate/Camp.rds")
-# 
-# #---Darmanis--------
-# table(Darmanis$full_phenoData$cellType)
-# # Darmanis$keep = which(Darmanis$full_phenoData$cellType != "Unknown")
-# # Darmanis$full_phenoData <- Darmanis$full_phenoData[Darmanis$keep, ]
-# # Darmanis$data <- Darmanis$data[,Darmanis$keep]
-# table(Darmanis$full_phenoData$cellType)
-# # Darmanis$full_phenoData$cellType <- gsub(" ","_",Darmanis$full_phenoData$cellType)
-# table(Darmanis$full_phenoData$cellType)
-# # Darmanis$simualte <- scSimulate(Darmanis, leastNum=20, plotmarker = F)
-# Darmanis$simulate1 <- scSimulateSplit(Darmanis, 
-#                                       leastNum=20, plotmarker = F,
-#                                       norm1 = "CPM",log2.threshold = 1)
-# # table(Darmanis$simulate1$markers$CT)
-# nrow(Darmanis$simulate1$markers)
-# table(Darmanis$simulate1$markers$CT);nrow(Darmanis$simulate1$markers)
-# Darmanis <- scSimulateShift(Darmanis,"all",TRUE)
-# Darmanis$simulate1$T["NEUROD6",1:5]
-# Darmanis$Indata$T["NEUROD6",1:5]
-# saveRDS(Darmanis,"F:/wangchenqi/CDSC/1scSimulate/dataSimulate/Darmanis.rds")
-# 
-#---Nestorowa--------
-table(Nestorowa$full_phenoData$cellType)
-Nestorowa$keep = which(Nestorowa$full_phenoData$cellType != "Unknown")
-Nestorowa$full_phenoData <- Nestorowa$full_phenoData[Nestorowa$keep, ]
-Nestorowa$data <- Nestorowa$data[,Nestorowa$keep]
-table(Nestorowa$full_phenoData$cellType)
-# Nestorowa$full_phenoData$cellType <- gsub(" ","_",Nestorowa$full_phenoData$cellType)
-table(Nestorowa$full_phenoData$cellType)
-# Nestorowa$simualte <- scSimulate(Nestorowa, leastNum=20, plotmarker = F)
-Nestorowa$data[1:10,1:10]
-Nestorowa$simulate1 <- scSimulateSplit(Nestorowa,
-                                       leastNum=20, plotmarker = F,
-                                       norm1 = "none",log2.threshold = log2(1),
-                                       )
-nrow(Nestorowa$simulate1$markerslist)
-table(Nestorowa$simulate1$markerslist$CT);nrow(Nestorowa$simulate1$markerslist)
-# FALSE 表示对T\C\C_REF不做标准化
-Nestorowa <- scSimulateShift(Nestorowa,"all",FALSE)
-Nestorowa$simulate1$T["ENSMUSG00000060131",1:5]
-Nestorowa$Indata$T["ENSMUSG00000060131",1:5]
-# 
-# saveRDS(Nestorowa,"F:/wangchenqi/CDSC/1scSimulate/dataSimulate/Nestorowa.rds")
-
-#---Manno--------
-# which(rownames(Manno$data) == "SEPT3")#[1] 15670
-# which(rownames(Manno$data) == "'SEPT3'")#[1] 21
-# all(Manno$data[which(rownames(Manno$data) == "'SEPT3'"),] ==
-#       Manno$data[which(rownames(Manno$data) == "SEPT3"),])#[1] FALSE
-# names <- rownames(Manno$data);names[21] = c("SEPT3_2")
-# rownames(Manno$data) = names
-# 
-# table(Manno$full_phenoData$cellType)
-# Manno$keep = which(Manno$full_phenoData$cellType != "Unk")
-# Manno$full_phenoData <- Manno$full_phenoData[Manno$keep, ]
-# Manno$data <- Manno$data[,Manno$keep]
-# sort(table(Manno$full_phenoData$cellType))
-# # Manno$full_phenoData$cellType <- gsub(" ","_",Manno$full_phenoData$cellType)
-# # table(Manno$full_phenoData$cellType)
-# # Manno$simualte <- scSimulate(Manno, leastNum=20, plotmarker = F)
-# Manno$simulate1 <- scSimulateSplit(Manno, 
-#                                    leastNum=60, plotmarker = F,
-#                                    norm1 = "CPM",log2.threshold = log2(2))
-# nrow(Manno$simulate1$markers)
-# table(Manno$simulate1$markers$CT);nrow(Manno$simulate1$markers);
-# length(unique(Manno$simulate1$markers$CT))
-# 
-# Manno <- scSimulateShift(Manno,"all",TRUE)
-# Manno$simulate1$T["ONECUT2",1:5]
-# Manno$Indata$T["ONECUT2",1:5]
-# 
-# saveRDS(Manno,"F:/wangchenqi/CDSC/1scSimulate/dataSimulate/Manno.rds")
-
 #--------sc ————————————------------
 rm (list=ls ())
 setwd("F:/wangchenqi/CDSC/1scSimulate")
@@ -198,7 +33,7 @@ result$all;dim(result$all)
 # diag(cor(t(result$MuSiC$p),t(scData$Indata$P)))
 # diag(cor(t(result$linseed$p),t(scData$Indata$P)))
 
-#关于C的ct的热图
+#pheatMap of C's ct
 library(pheatmap)
 STRING_name
 map = GetCorMatrix(result$CDSC3$dec$c,scData$Indata$C,matrix = "c");map
@@ -231,28 +66,6 @@ result$all
 result$CDSC3$result
 result$CDSC2$result
 
-
-# library(parallel)#多线程
-# detectCores()
-# # [1] 40
-# # 这里初始化8个核
-# cl <- makeCluster(8)
-# test_funciton <- function(file){
-#   # 导入某某包
-#   library(packages)
-#   # 读取
-#   raw.data <- read.table(file)
-#   data <- somefunction(raw.data)
-#   # 存为文件
-#   write.csv(data, "out.csv")
-# }
-# # 除了上述在函数体中加载包之外，也可以在事先用parallel的专门的函数进行加载
-# clusterExport(cl, library(packages))
-# # 开始多线程
-# parLapply(cl, c(file1, file2, file3), test_funciton)
-# # 运行完毕之后，需要释放，不然会一直占据资源
-# stopCluster(cl)
-scData <- Camp
 #-------CDSC-------------
 result <- list()
 result$CDSC3$seedd = 44
@@ -634,33 +447,6 @@ colnames(result$deconf$result$all) <- c("RMSE_to_P", "Peason_to_P", "RMSE_to_C",
 result$deconf$result <- result$deconf$result$all
 result$deconf$result
 
-#--------CDSeq-------------------
-# library(CDSeq)
-# star_time <- Sys.time()
-# result$CDSeq.noRef <- CDSeq(bulk_data =  as.matrix(scData$Indata$T), 
-#                             cell_type_number = dim(scData$Indata$C_ref)[2], 
-#                             mcmc_iterations = 100, 
-#                             cpu_number=20)
-# end_time <- Sys.time()
-# end_time-star_time
-# result$CDSeq.noRef$result <- calculate_result(result$CDSeq.noRef$estGEP,result$CDSeq.noRef$estProp,
-#                                               scData$Indata$T, scData$Indata$C, scData$Indata$C_ref, scData$Indata$P)
-# result$CDSeq.noRef$time <- end_time-star_time
-# result$CDSeq.noRef$result
-# 
-# star_time <- Sys.time()
-# result$CDSeq.haveRef<-CDSeq(bulk_data =  as.matrix(scData$Indata$T), 
-#                             cell_type_number = dim(scData$Indata$C_ref)[2], 
-#                             mcmc_iterations = 20, 
-#                             # gene_length = as.vector(gene_length), 
-#                             reference_gep = as.matrix(scData$Indata$C_ref),  # gene expression profile of pure cell lines
-#                             cpu_number = 8)
-# end_time <- Sys.time()
-# end_time-star_time
-# result$CDSeq.haveRef$result <- calculate_result(result$CDSeq.haveRef$estGEP,result$CDSeq.haveRef$estProp,
-#                                                 scData$Indata$T, scData$Indata$C, scData$Indata$C_ref, scData$Indata$P)
-# result$CDSeq.haveRef$time <- end_time-star_time
-# result$CDSeq.haveRef$result
 #------TOAST + NMF-------
 require(DeCompress)
 source("F:/wangchenqi/CDSC/DeCompress.R")
@@ -788,15 +574,6 @@ colnames(result$CellDistinguisher$result$all) <- c("RMSE_to_P", "Peason_to_P", "
 result$CellDistinguisher$result <- result$CellDistinguisher$result$all
 result$CellDistinguisher$result
 
-#-------------DeCompress--------
-# result$DeCompress$decompress.res = bestDeconvolution( scData$Indata$T,
-#                                    n.types = dim(scData$Indata$C_ref)[2],
-#                                    scree = 'cumvar',
-#                                    logTransform = F,
-#                                    known.props = NULL,
-#                                    methods = c('TOAST',
-#                                                'Linseed',
-#                                                'CellDistinguisher'))
 
 #--------------all————————-----------------
 MyMethodName <- c("CDSC3","NNLS","OLS","FARDEEP","CIBERSORT" ,
@@ -871,16 +648,9 @@ end_time-star_time
 saveRDS(para_lambda_44_8,
         paste(getwd(),"/paramater/para_lambda_",STRING_name,"_NEW.rds",sep=""))
 
-# 热图
+# pheatMap
 rm (list=ls ())
-setwd("F:/wangchenqi/CDSC/1scSimulate")
 
-source("F:/wangchenqi/CDSC/CDSC.R")
-source("F:/wangchenqi/CDSC/CDSC_expand.R")
-
-# myOneref <- intersect(Oneref,MethodName);myOneref=setdiff(myOneref,c("CDSC2"))
-# myTworef <- intersect(NoCref,MethodName);myTworef=union(c("CDSC3"),myTworef);myTworef=setdiff(myTworef,c("CDSC2"))
-a = gsub('.rds','',list.files("F:/wangchenqi/CDSC/1scSimulate/dataSimulate"));a
 a = c("Nestorowa","Manno","Darmanis","Camp","Segerstolpe")
 
 MyMethodName <- c("CDSC3","NNLS","OLS","FARDEEP","CIBERSORT" ,     
@@ -945,7 +715,7 @@ plot_pheatmp;
 eoffice::topptx(plot_pheatmp,
                 filename = "F:/wangchenqi/CDSC/pictures/class1_NO_RMSE_C.pptx")
 
-# 泛化能力的箱线图--p----
+# boxplot--p----
 mapBox <- NULL
 mapBox =  data.frame(pearson = map[1,], method = rownames(map)[1],row.names = NULL)
 nn1 <- nrow(mapBox)
@@ -970,7 +740,7 @@ plot_class1;
 eoffice::topptx(plot_class1,
                 filename = "F:/wangchenqi/CDSC/pictures/class1_NO_fanhua_p.pptx")
 
-# 泛化能力的箱线图----c-----
+# boxplot----c-----
 mapBox <- NULL
 methodsNames2 <-  c("CDSC3","CDSC2", "DSA","ssKL" ,"ssFrobenius","deconf",
                     "TOAST","Linseed","CellDistinguisher")
@@ -998,7 +768,7 @@ plot_class1;
 eoffice::topptx(plot_class1,
                 filename = "F:/wangchenqi/CDSC/pictures/class1_NO_fanhua_C.pptx")
 
-# sample情况的柱状图
+# sample bar
 rm (list=ls ())
 setwd("F:/wangchenqi/CDSC/1scSimulate")
 

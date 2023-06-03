@@ -1,5 +1,48 @@
+#' Runs CDSC_3
+#'
+#' @param X the input dropout bulk data.
+#'
+#' @param c0 the reference GEP matrix
+#' 
+#' @param k Number of cell types used for matrix initialization
+#'
+#' @param parameter the vector of parameters. 
+#' lambda1 is the value of lambda1 in the mathematical model;
+#' lambda2 is the value of lambda2 in the mathematical model;
+#' lambdaC is the value of lambda3 in the mathematical model.
+#'
+#' @param error the threshold of the error between the current imputed matrix and the previous one.
+#' Default is 1e-5.
+#' 
+#' @param seedd Random seed, default is 44.
+#' 
+#' @param Ss sample similarity matrix, obtained through the SM function, eg: SM(t(X))
+#'
+#' @param Sg gene similarity matrix, obtained through the SM function, eg: SM (X)
+#' 
+#' @param all_number the maximum iterations, the default is 500.
+#' 
+#' @param ReturnL Returns the value L of the objective function for each iteration.
+#' Default is F.
+#' 
+#' @examples
+#' # Set up the parameter and matrix used in CDSC
+#' Ss <- SM(t(X))
+#' Sg <- SM(x)
+#' lambda1 <- 1e-03
+#' lambda2 <- 1e+00
+#' lambdaC <- 1e+01
+#' 
+#' # Run CDSC
+#' result <- CDSC_3(X,c0,k,lambda1, lambda2, lambdaC, Ss, Sg)
+#'
+#' @return Two matrices, the first is the GEP matrix C, and the second is the cell type proportion matrix P
+#'
+#' @rdname CDSC_3
+#'
+#' @export
 
-CDSC_3 <- function(X,c0, k, lambda1, lambda2,lambdaC,error= 10^-5,seedd,Ss,Sg,all_number = 500,ReturnL = F){
+CDSC_3 <- function(X,c0, k, lambda1, lambda2,lambdaC,error= 10^-5,seedd=44,Ss,Sg,all_number = 500,ReturnL = F){
   X <- as.matrix(X)
   if(storage.mode(X) != "double"){
     storage.mode(X) <- "double"
@@ -10,7 +53,7 @@ CDSC_3 <- function(X,c0, k, lambda1, lambda2,lambdaC,error= 10^-5,seedd,Ss,Sg,al
   n <- gn[2]
   # Ss <- SM(t(X))
   # Sg <- SM(X)
-  set.seed(seedd)#?????????????ӣ???֤????????һ??
+  set.seed(seedd)
   c <- matrix(runif(g*k) ,g,k)
   set.seed(seedd)
   p <- matrix(runif(k*n) ,k,n)
@@ -35,18 +78,11 @@ CDSC_3 <- function(X,c0, k, lambda1, lambda2,lambdaC,error= 10^-5,seedd,Ss,Sg,al
                 +lambda1*norm(Ss-t(p)%*%p, type = "F")^2 + +lambda2*norm(Sg-c%*%t(c), type = "F")^2
     }
 
-    # setTxtProgressBar(pb, jump/all_number)
-    # if(rata_change_c < error){
-    
     if(all(rata_change_p < error & rata_change_c < error)){
-      # cat("\n????????: ",jump)
       break
     }
     
   }
-  # end_time <- Sys.time()
-  # close(pb)
-  # p <- SumEqual_1(p)
   c[which(c < 0.000001) ] <- 0
   if(ReturnL){
     return(list(c=c,p=p,jump=jump,L=L))
@@ -55,7 +91,49 @@ CDSC_3 <- function(X,c0, k, lambda1, lambda2,lambdaC,error= 10^-5,seedd,Ss,Sg,al
   }
 }
 
-CDSC_2 <- function(X, k, lambda1, lambda2,lambdaC=0,error,seedd,Ss,Sg,all_number = 500,ReturnL = F){
+#' Runs CDSC_2
+#'
+#' @param X the input dropout bulk data.
+#' 
+#' @param k Number of cell types used for matrix initialization
+#'
+#' @param parameter the vector of parameters. 
+#' lambda1 is the value of lambda1 in the mathematical model;
+#' lambda2 is the value of lambda2 in the mathematical model;
+#' lambdaC = 0.
+#'
+#' @param error the threshold of the error between the current imputed matrix and the previous one.
+#' Default is 1e-5.
+#' 
+#' @param seedd Random seed, default is 44.
+#' 
+#' @param Ss sample similarity matrix, obtained through the SM function, eg: SM(t(X))
+#'
+#' @param Sg gene similarity matrix, obtained through the SM function, eg: SM (X)
+#' 
+#' @param all_number the maximum iterations, the default is 500.
+#' 
+#' @param ReturnL Returns the value L of the objective function for each iteration.
+#' Default is F.
+#' 
+#' @examples
+#' # Set up the parameter and matrix used in CDSC
+#' Ss <- SM(t(X))
+#' Sg <- SM(x)
+#' lambda1 <- 1e-03
+#' lambda2 <- 1e+00
+#' lambdaC <- 1e+01
+#' 
+#' # Run CDSC
+#' result <- CDSC_2(X,k,lambda1, lambda2, lambdaC, Ss, Sg)
+#'
+#' @return Two matrices, the first is the GEP matrix C, and the second is the cell type proportion matrix P
+#'
+#' @rdname CDSC_2
+#'
+#' @export
+
+CDSC_2 <- function(X, k, lambda1, lambda2,lambdaC=0,error= 10^-5,seedd=44,Ss,Sg,all_number = 500,ReturnL = F){
   X <- as.matrix(X)
   if(storage.mode(X) != "double"){
     storage.mode(X) <- "double"
@@ -89,17 +167,13 @@ CDSC_2 <- function(X, k, lambda1, lambda2,lambdaC=0,error,seedd,Ss,Sg,all_number
     if(ReturnL){
       L[jump] <- norm(X-c%*%p, type = "F")^2 + lambda1*norm(Ss-t(p)%*%p, type = "F")^2 + +lambda2*norm(Sg-c%*%t(c), type = "F")^2
     }
-    # setTxtProgressBar(pb, jump/all_number)
-    # if(rata_change_c < error){
+
     if(all(c(rata_change_p,rata_change_c) < error)){
-      # cat("\n????????: ",jump)
       break
     }
     
   }
-  # end_time <- Sys.time()
-  # close(pb)
-  # p <- SumEqual_1(p)
+
   c[which(c < 0.000001) ] <- 0
   if(ReturnL){
     return(list(c=c,p=p,jump=jump,L=L))
@@ -108,72 +182,34 @@ CDSC_2 <- function(X, k, lambda1, lambda2,lambdaC=0,error,seedd,Ss,Sg,all_number
   }
   
 }
-CDSC_3_mix <- function(X,c0, k, lambda1, lambda2,lambdaC,error,seedd, all_number = 500,
-                       Ss=matrix(1,dim(X)[2],dim(X)[2]),Sg=matrix(1,dim(X)[1],dim(X)[1])){
-  X <- as.matrix(X)
-  if(storage.mode(X) != "double"){
-    storage.mode(X) <- "double"
-  }
-  
-  gn <- dim(X)
-  g <- gn[1]
-  n <- gn[2]
-  # Ss <- SM(t(X))
-  # Sg <- SM(X)
-  set.seed(seedd)
-  c <- matrix(runif(g*k) ,g,k)
-  set.seed(seedd)
-  p <- matrix(runif(k*n) ,k,n)
-  # error = 10^-5
-  jump = 0
-  L = 0
-  # all_number = 500
-  # pb <- txtProgressBar(style = 3)
-  # star_time <- Sys.time()
-  while(jump < all_number){
-    c_init <- c
-    p_init <- p
-    c <- c*((X%*%t(p)+ lambdaC*c0 +2*lambda2*Sg%*%c))/(c%*%p%*%t(p)+ lambdaC*c+ 2*lambda2*c%*%t(c)%*%c)
-    p <- p*(t(c)%*%X+2*lambda1*p%*%Ss)/(t(c)%*%c%*%p+2*lambda1*p%*%t(p)%*%p)
-    jump = jump+1
-    
-  }
-  # c[which(c < 0.000001) ] <- 0
-  return(list(c=c,p=p,jump=jump))
-}
-########
 
-
-#######
+# get  similarity matrix
 SM <- function(A){
-  ##????cmf-impute?????ģ?d = 1-pearson,s = 1/(1+d)
-  score = 1/(2-cor(t(A)))
   
-  # score=matrix(1,dim(A)[1],dim(A)[1]) - cor(t(A))
-  # for (i in 1:dim(score)[1]) {
-  #   for (j in 1:dim(score)[2]) {
-  #     score[i,j] <- 1/(1+score[i,j])
-  #   }
-  # }
+  score = 1/(2-cor(t(A)))
+
   return(score)
 }
-########
-NORM <- function(A){
-  v <- colSums(A)
-  for (i in 1:length(v)) {
-    if(v[i]!=0){
-      A[,i] <- A[,i]/v[i]
-    }
-  }
-  # d <- diag(v)
-  # A <- A%*%solve(d)
-  return(A)
-}
 
+
+# NORM <- function(A){
+#   v <- colSums(A)
+#   for (i in 1:length(v)) {
+#     if(v[i]!=0){
+#       A[,i] <- A[,i]/v[i]
+#     }
+#   }
+#   # d <- diag(v)
+#   # A <- A%*%solve(d)
+#   return(A)
+# }
+
+# Make the sum of cell types corresponding to the proportional matrix sample one
 SumEqual_1 <- function(p){
   return(apply(p,2,function(x) x/sum(x)))
 }
-########
+
+# the threshold of the error between the current imputed matrix and the previous one.
 Change_rata <- function(x_init,x){
   a = norm(x_init - x,"F")^2
   b = norm(x_init,"F")^2
