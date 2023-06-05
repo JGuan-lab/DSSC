@@ -1,4 +1,4 @@
-# CDSC: Complete Deconvolution from Bulk Gene Expression by Leveraging Single-cell RNA-Seq Data
+# CDSC: complete deconvolution from bulk gene expression by leveraging single-cell RNA-Seq data
 
 ## 1. Introduction
 
