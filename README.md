@@ -6,7 +6,7 @@ CDSC is a complete deconvolution algorithm based on NMF. It can be used to infer
 
 Given the bulk matrix and the reference GEP matrix, CDSC can compute cell similarity matrix and gene similarity matrix from the bulk matrix. Then, using the reference GEP matrix, CDSC performs deconvolution to calculate the cell type proportions and cell type-specific gene expression profiles of heterogeneous samples.
 
-The datasets analyzed in the paper are available at: https://doi.org/10.5281/zenodo.8000867
+The datasets analyzed in the paper are available at: https://doi.org/10.5281/zenodo.8020767
 
 ## Running the tests
 
@@ -28,23 +28,32 @@ The datasets analyzed in the paper are available at: https://doi.org/10.5281/zen
     k: Number of cell types used for matrix initialization，it can be obtained from the reference GEP matrix or manually inputted.
     
 ### Example:
-    #example.R
-    setwd(path)
-    source('CDSC.R')
-    source('CDSC_help.R')
-    example <- list(data = readRDS("example.rds"), full_phenoData = readRDS("example_phenoData.rds"))
-    example$simulate1 <- scSimulateSplit(Segerstolpe,
-                                         leastNum=50, plotmarker = F,
-                                         norm1 = "CPM",log2.threshold = 1)
-    example <- scSimulateShift(Segerstolpe,"all",standardization=TRUE)
-    
-    result = CDSC_3(data_bulk = scData$Indata$T, 
-                data_ref = scData$Indata$C_ref, 
-                k = dim(scData$Indata$C_ref)[2], 
-                lambda1 = 1e-03, 
-                lambda2 = 0e+00,
-                lambdaC = 1000,
-                Ss = SM(t(scData$Indata$T)),
-                Sg = SM(scData$Indata$T))
-                
-    saveRDS(result,file="example.rds")                 
+#### Source
+    rm (list=ls ())
+    source("CDSC.R")
+    source("function_help.R")
+
+#### Read data
+    scData <- list(data = readRDS("XXX.rds"), full_phenoData = readRDS("XXX_phenoData.rds"))
+
+#### Simulation
+    bulkData <- simulation(scData)
+    # if you need true data, please insert here directly.
+    bulkData <- trueData 
+
+#### Deconvolution
+
+    retult <- CDSC(data_bulk = bulkData$Indata$T,
+                   data_ref = data_bulk$Indata$C_ref,  
+                   k = dim(data_bulk$Indata$C_ref)[2], 
+                   lambda1 = 1e-03, 
+                   lambda2 = 0e+00,
+                   lambdaC = 1000,
+                   Ss = SM(t(scData$Indata$T)),
+                   Sg = SM(scData$Indata$T))
+#### Evalution
+
+    ctlabels <- Row_label(data_bulk$Indata$C_ref,retult$c,leastnum = 3)
+    rownames(retult$p) <- ctlabels
+    colnames(retult$c) <- ctlabels
+    getPearsonRMSE(retult$p, data_bulk$Indata$P)
