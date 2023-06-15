@@ -2,7 +2,7 @@ rm (list=ls ())
 set.seed(44)
 
 source("CDSC.R")
-source("CDSC_expand.R")
+source("function_help.R")
 
 ##------------Intra-data----
 Segerstolpe <- list(data = readRDS("Segerstolpe.rds"), full_phenoData = readRDS("Segerstolpe_phenoData.rds"))

@@ -1,8 +1,8 @@
-#' Runs CDSC_3
+#' Runs CDSC
 #'
-#' @param X the input dropout bulk data.
+#' @param data_bulk the input dropout bulk data.
 #'
-#' @param c0 the reference GEP matrix
+#' @param data_ref the reference GEP matrix
 #' 
 #' @param k Number of cell types used for matrix initialization
 #'
@@ -16,9 +16,9 @@
 #' 
 #' @param seedd Random seed, default is 44.
 #' 
-#' @param Ss sample similarity matrix, obtained through the SM function, eg: SM(t(X))
+#' @param Ss sample similarity matrix, obtained through the SM function, eg: SM(t(data_bulk))
 #'
-#' @param Sg gene similarity matrix, obtained through the SM function, eg: SM (X)
+#' @param Sg gene similarity matrix, obtained through the SM function, eg: SM (data_bulk)
 #' 
 #' @param all_number the maximum iterations, the default is 500.
 #' 
@@ -27,32 +27,32 @@
 #' 
 #' @examples
 #' # Set up the parameter and matrix used in CDSC
-#' Ss <- SM(t(X))
-#' Sg <- SM(x)
+#' Ss <- SM(t(data_bulk))
+#' Sg <- SM(data_bulk)
 #' lambda1 <- 1e-03
 #' lambda2 <- 1e+00
 #' lambdaC <- 1e+01
 #' 
 #' # Run CDSC
-#' result <- CDSC_3(X,c0,k,lambda1, lambda2, lambdaC, Ss, Sg)
+#' result <- CDSC(data_bulk,data_ref,k,lambda1, lambda2, lambdaC, Ss, Sg)
 #'
 #' @return Two matrices, the first is the GEP matrix C, and the second is the cell type proportion matrix P
 #'
-#' @rdname CDSC_3
+#' @rdname CDSC
 #'
 #' @export
 
-CDSC_3 <- function(X,c0, k, lambda1, lambda2,lambdaC,error= 10^-5,seedd=44,Ss,Sg,all_number = 500,ReturnL = F){
-  X <- as.matrix(X)
-  if(storage.mode(X) != "double"){
-    storage.mode(X) <- "double"
+CDSC <- function(data_bulk,data_ref, k, lambda1, lambda2,lambdaC,error= 10^-5,seedd=44,Ss,Sg,all_number = 500,ReturnL = F){
+  data_bulk <- as.matrix(data_bulk)
+  if(storage.mode(data_bulk) != "double"){
+    storage.mode(data_bulk) <- "double"
   }
   
-  gn <- dim(X)
+  gn <- dim(data_bulk)
   g <- gn[1]
   n <- gn[2]
-  # Ss <- SM(t(X))
-  # Sg <- SM(X)
+  # Ss <- SM(t(data_bulk))
+  # Sg <- SM(data_bulk)
   set.seed(seedd)
   c <- matrix(runif(g*k) ,g,k)
   set.seed(seedd)
@@ -64,8 +64,8 @@ CDSC_3 <- function(X,c0, k, lambda1, lambda2,lambdaC,error= 10^-5,seedd=44,Ss,Sg
   while(jump < all_number){
     c_init <- c
     p_init <- p
-    c <- c*((X%*%t(p)+ lambdaC*c0 +2*lambda2*Sg%*%c))/(c%*%p%*%t(p)+ lambdaC*c+ 2*lambda2*c%*%t(c)%*%c)
-    p <- p*(t(c)%*%X+2*lambda1*p%*%Ss)/(t(c)%*%c%*%p+2*lambda1*p%*%t(p)%*%p)
+    c <- c*((data_bulk%*%t(p)+ lambdaC*data_ref +2*lambda2*Sg%*%c))/(c%*%p%*%t(p)+ lambdaC*c+ 2*lambda2*c%*%t(c)%*%c)
+    p <- p*(t(c)%*%data_bulk+2*lambda1*p%*%Ss)/(t(c)%*%c%*%p+2*lambda1*p%*%t(p)%*%p)
     jump = jump+1
     
     rata_change_c <- Change_rata(c_init,c)
@@ -74,7 +74,7 @@ CDSC_3 <- function(X,c0, k, lambda1, lambda2,lambdaC,error= 10^-5,seedd=44,Ss,Sg
     if(rata_change_c == Inf || is.na(rata_change_c))rata_change_c = 100
     
     if(ReturnL){
-          L[jump] <- norm(X-c%*%p, type = "F")^2 + lambdaC*norm(c-c0, type = "F")^2 
+          L[jump] <- norm(data_bulk-c%*%p, type = "F")^2 + lambdaC*norm(c-data_ref, type = "F")^2 
                 +lambda1*norm(Ss-t(p)%*%p, type = "F")^2 + +lambda2*norm(Sg-c%*%t(c), type = "F")^2
     }
 
@@ -89,98 +89,6 @@ CDSC_3 <- function(X,c0, k, lambda1, lambda2,lambdaC,error= 10^-5,seedd=44,Ss,Sg
   }else{
     return(list(c=c,p=p,jump=jump))
   }
-}
-
-#' Runs CDSC_2
-#'
-#' @param X the input dropout bulk data.
-#' 
-#' @param k Number of cell types used for matrix initialization
-#'
-#' @param parameter the vector of parameters. 
-#' lambda1 is the value of lambda1 in the mathematical model;
-#' lambda2 is the value of lambda2 in the mathematical model;
-#' lambdaC = 0.
-#'
-#' @param error the threshold of the error between the current imputed matrix and the previous one.
-#' Default is 1e-5.
-#' 
-#' @param seedd Random seed, default is 44.
-#' 
-#' @param Ss sample similarity matrix, obtained through the SM function, eg: SM(t(X))
-#'
-#' @param Sg gene similarity matrix, obtained through the SM function, eg: SM (X)
-#' 
-#' @param all_number the maximum iterations, the default is 500.
-#' 
-#' @param ReturnL Returns the value L of the objective function for each iteration.
-#' Default is F.
-#' 
-#' @examples
-#' # Set up the parameter and matrix used in CDSC
-#' Ss <- SM(t(X))
-#' Sg <- SM(x)
-#' lambda1 <- 1e-03
-#' lambda2 <- 1e+00
-#' lambdaC <- 1e+01
-#' 
-#' # Run CDSC
-#' result <- CDSC_2(X,k,lambda1, lambda2, lambdaC, Ss, Sg)
-#'
-#' @return Two matrices, the first is the GEP matrix C, and the second is the cell type proportion matrix P
-#'
-#' @rdname CDSC_2
-#'
-#' @export
-
-CDSC_2 <- function(X, k, lambda1, lambda2,lambdaC=0,error= 10^-5,seedd=44,Ss,Sg,all_number = 500,ReturnL = F){
-  X <- as.matrix(X)
-  if(storage.mode(X) != "double"){
-    storage.mode(X) <- "double"
-  }
-  
-  gn <- dim(X)
-  g <- gn[1]
-  n <- gn[2]
-  # Ss <- SM(t(X))
-  # Sg <- SM(X)
-  set.seed(seedd)#?????????????ӣ???֤????????һ??
-  c <- matrix(runif(g*k) ,g,k)
-  set.seed(seedd)
-  p <- matrix(runif(k*n) ,k,n)
-  p <- NORM(p)
-  # error = 10^-5
-  jump = 0
-  L = 0
-  
-  # pb <- txtProgressBar(style = 3)
-  # star_time <- Sys.time()
-  while(jump < all_number){
-    c_init <- c
-    p_init <- p
-    c <- c*((X%*%t(p) +2*lambda2*Sg%*%c))/(c%*%p%*%t(p)+ 2*lambda2*c%*%t(c)%*%c)
-    p <- p*(t(c)%*%X+2*lambda1*p%*%Ss)/(t(c)%*%c%*%p+2*lambda1*p%*%t(p)%*%p)
-    jump = jump+1
-    
-    rata_change_c <- Change_rata(c_init,c)
-    rata_change_p <- Change_rata(p_init,p)
-    if(ReturnL){
-      L[jump] <- norm(X-c%*%p, type = "F")^2 + lambda1*norm(Ss-t(p)%*%p, type = "F")^2 + +lambda2*norm(Sg-c%*%t(c), type = "F")^2
-    }
-
-    if(all(c(rata_change_p,rata_change_c) < error)){
-      break
-    }
-    
-  }
-
-  c[which(c < 0.000001) ] <- 0
-  if(ReturnL){
-    return(list(c=c,p=p,jump=jump,L=L))
-  }else{
-    return(list(c=c,p=p,jump=jump))
-  }
-  
 }
 
 # get  similarity matrix
@@ -216,4 +124,8 @@ Change_rata <- function(x_init,x){
   return(a/b)
 }
 
-
+simulation <- function(scData,leastNum=50, plotmarker = F,norm1 = "CPM",log2.threshold = 1) {
+  scData$simulate1 <- scSimulateSplit(scData,leastNum=50, plotmarker = F,norm1 = "CPM",log2.threshold = 1)
+  bulkData <- scSimulateShift(scData,"all",standardization=TRUE)
+  return(bulkData)
+}

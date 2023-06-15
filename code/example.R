@@ -1,11 +1,24 @@
-
-#--------sc ————————————------------
 rm (list=ls ())
-setwd("F:/wangchenqi/CDSC/1scSimulate")
 
-source("F:/wangchenqi/CDSC/CDSC.R")
-source("F:/wangchenqi/CDSC/CDSC_expand.R")
-a = gsub('.rds','',list.files("F:/wangchenqi/CDSC/1scSimulate/dataSimulate"));a
+source("CDSC.R")
+source("function_help.R")
+
+#------data preparation----
+Segerstolpe <- list(data = readRDS("Segerstolpe.rds"), full_phenoData = readRDS("Segerstolpe_phenoData.rds"))
+sort(table(Segerstolpe$full_phenoData$cellType))
+# Segerstolpe$simualte <- scSimulate(Segerstolpe, leastNum=50, plotmarker = F)
+Segerstolpe$simulate1 <- scSimulateSplit(Segerstolpe,
+                                         leastNum=50, plotmarker = F,
+                                         norm1 = "CPM",log2.threshold = 1)
+nrow(Segerstolpe$simulate1$markerslist)
+table(Segerstolpe$simulate1$markerslist$CT)
+Segerstolpe <- scSimulateShift(Segerstolpe,"all",standardization=TRUE)
+Segerstolpe$simulate1$T["REG1A",1:5]
+Segerstolpe$Indata$T["REG1A",1:5]
+saveRDS(Segerstolpe,"XXX.rds")
+#--------sc------------
+
+a = gsub('.rds','',list.files("1scSimulate/dataSimulate"));a
 a = c("Nestorowa","Manno","Darmanis","Camp","Segerstolpe")
 STRING_name = a[3]; STRING_name
 getwd()
@@ -48,7 +61,7 @@ plot_pheatmp <- pheatmap(map,cluster_row = FALSE,cluster_cols = FALSE
                          ,main = STRING_name)
 
 eoffice::topptx(plot_pheatmp,filename = 
-                  paste("F:/wangchenqi/CDSC/pictures/class1_ct_NO_",
+                  paste("pictures/class1_ct_NO_",
                         STRING_name,".pptx",sep=""))
 
 
@@ -82,10 +95,17 @@ library(dplyr)
 
 
 # result
-result$CDSC3$dec = CDSC_3(scData$Indata$T, scData$Indata$C_ref, dim(scData$Indata$C_ref)[2], 
-                          result$CDSC3$lambda1, result$CDSC3$lambda2, result$CDSC3$lambdaC,
-                          result$CDSC3$TerCondition,result$CDSC3$seedd,
-                          result$CDSC3$Ss,result$CDSC3$Sg,all_number = 3000)
+result$CDSC3$dec = CDSC(scData$Indata$T, 
+                          scData$Indata$C_ref, 
+                          dim(scData$Indata$C_ref)[2], 
+                          result$CDSC3$lambda1, 
+                          result$CDSC3$lambda2, 
+                          result$CDSC3$lambdaC,
+                          result$CDSC3$TerCondition,
+                          result$CDSC3$seedd,
+                          result$CDSC3$Ss,
+                          result$CDSC3$Sg,
+                          all_number = 3000)
 
 result$CDSC3$result <- calculate_result(result$CDSC3$dec$c,result$CDSC3$dec$p,
                             scData$Indata$T,scData$Indata$C,scData$Indata$C_ref,scData$Indata$P,
@@ -98,7 +118,7 @@ result$CDSC3$result
 result$CDSC2$lambda1 <- 1e-02
 result$CDSC2$lambda2 <- 1e+01
 result$CDSC2$lambdaC <- 0
-result$CDSC2$dec = CDSC_2(scData$Indata$T,  dim(scData$Indata$C_ref)[2], 
+result$CDSC2$dec = CDSC(scData$Indata$T,  NULL, dim(scData$Indata$C_ref)[2], 
                            result$CDSC2$lambda1, result$CDSC2$lambda2, result$CDSC2$lambdaC,
                            result$CDSC3$TerCondition,result$CDSC3$seedd,
                            result$CDSC3$Ss,result$CDSC3$Sg,all_number = 3000)
@@ -139,7 +159,7 @@ result$FARDEEP$result
 
 
 #----------CIBERSORT-----------------
-source("F:/wangchenqi/CDSC/CIBERSORT.R")
+source("CIBERSORT.R")
 result$CIBERSORT$p = CIBERSORT(sig_matrix = scData$Indata$C_ref, mixture_file = scData$Indata$T, QN = FALSE)
 result$CIBERSORT$p = t(result$CIBERSORT$p[,1:(ncol(result$CIBERSORT$p)-3)])
 result$CIBERSORT$result = getPearsonRMSE(result$CIBERSORT$p,scData$Indata$P)
@@ -224,8 +244,8 @@ result$lasso$result
 # saveRDS(result,paste(getwd(),"/dataResult/result_",STRING_name,".rds",sep=""))
 
 #
-# source("F:/wangchenqi/CDSC/CDSC.R")
-# source("F:/wangchenqi/CDSC/CDSC_expand.R")
+# source("CDSC.R")
+# source("CDSC_expand.R")
 
 #----------EPIC----------
 require(EPIC)
@@ -244,7 +264,7 @@ result$EPIC$p = result$EPIC$p[!rownames(result$EPIC$p) %in% "otherCells",]
 result$EPIC$result = getPearsonRMSE(result$EPIC$p,scData$Indata$P)
 result$EPIC$result
 
-#--------sc methods_————————————------------
+#--------sc methods------------
 scData$sc$keep <- which(rownames(scData$simulate1$split$train) %in% scData$simulate1$shif_marker$gene)
 # scData$sc$keep <- which(rownames(scData$simulate1$split$train) %in% rownames(scData$simulate1$split$train))
 scData$sc$T <- scData$simulate1$T[scData$sc$keep,]
@@ -272,7 +292,7 @@ scData$sc$T.eset <- Biobase::ExpressionSet(assayData = as.matrix(scData$sc$T))
 
 #---------MuSiC-----------
 library(MuSiC)
-source("F:/wangchenqi/CDSC/MuSiC.R")
+source("MuSiC.R")
 result$MuSiC$p = t(music_prop_my(bulk.eset = scData$sc$T.eset, 
                                      sc.eset = scData$sc$C.eset,
                                      markers = NULL,
@@ -298,7 +318,7 @@ result$Bisque$result
 
 #--------SCDC-----
 library(SCDC)
-source("F:/wangchenqi/CDSC/SCDC.R")
+source("SCDC.R")
 # result$SCDC$p <- t(SCDC::SCDC_prop(bulk.eset = scData$sc$T.eset,
 result$SCDC$p <- t(SCDC_prop_my(bulk.eset = scData$sc$T.eset,
                                 sc.eset = scData$sc$C.eset, 
@@ -317,7 +337,7 @@ result$SCDC$result
 
 #---------DWLS--------
 # require(DWLS)
-source('F:/wangchenqi/CDSC/DWLS.R')
+source('DWLS.R')
 getwd()
 path=paste(getwd(),"/DWLS/results_",STRING_name,sep=""); path
 if(! dir.exists(path)){ #to avoid repeating marker_selection step when removing cell types; Sig.RData automatically created
@@ -357,7 +377,7 @@ result$DWLS$result
 
 # saveRDS(result,paste(getwd(),"/dataResult/result_",STRING_name,".rds",sep=""))
 
-#-----complete deconvolution methods————----------
+#-----complete deconvolution methods----------
 #--------DSA-------------------
 require(CellMix)
 md = scData$simulate1$markerslist
@@ -449,7 +469,7 @@ result$deconf$result
 
 #------TOAST + NMF-------
 require(DeCompress)
-source("F:/wangchenqi/CDSC/DeCompress.R")
+source("DeCompress.R")
 result$TOAST$toast.nmf <- csDeCompress_my(Y_raw = scData$Indata$T,
                                           K = dim(scData$Indata$C_ref)[2],
                                           nMarker = nrow(scData$Indata$T),
@@ -530,7 +550,7 @@ result$CellDistinguisher <- CellDistinguisher::gecd_CellDistinguisher(
   probesWithGenesOnly = F,
   verbose=0)
 
-# source("F:/wangchenqi/CDSC/CellDistinguisher.R")
+# source("CellDistinguisher.R")
 result$CellDist.deconv <-
   tryCatch(CellDistinguisher::gecd_DeconvolutionByDistinguishers(
     as.matrix(scData$Indata$T),
@@ -575,7 +595,7 @@ result$CellDistinguisher$result <- result$CellDistinguisher$result$all
 result$CellDistinguisher$result
 
 
-#--------------all————————-----------------
+#--------------all-----------------
 MyMethodName <- c("CDSC3","NNLS","OLS","FARDEEP","CIBERSORT" ,
                   "deconRNASeq","RLR","DCQ","elastic_net","ridge","lasso" ,"EPIC",
                   "MuSiC","Bisque","SCDC", "DWLS",
@@ -713,7 +733,7 @@ plot_pheatmp <- pheatmap(map[c(1,17:24),],cluster_row = FALSE,cluster_cols = FAL
 plot_pheatmp;
 
 eoffice::topptx(plot_pheatmp,
-                filename = "F:/wangchenqi/CDSC/pictures/class1_NO_RMSE_C.pptx")
+                filename = "pictures/class1_NO_RMSE_C.pptx")
 
 # boxplot--p----
 mapBox <- NULL
@@ -738,7 +758,7 @@ plot_class1 =  ggplot(mapBox, aes(factor(method,levels=MyMethodName),pearson,fil
 # ggtitle("I'm a titile") +theme(plot.title = element_text(hjust = 0.5)) #设置标题居中
 plot_class1;
 eoffice::topptx(plot_class1,
-                filename = "F:/wangchenqi/CDSC/pictures/class1_NO_fanhua_p.pptx")
+                filename = "pictures/class1_NO_fanhua_p.pptx")
 
 # boxplot----c-----
 mapBox <- NULL
@@ -766,18 +786,18 @@ plot_class1 =  ggplot(mapBox, aes(factor(method,levels=methodsNames2),pearson,fi
 # ggtitle("I'm a titile") +theme(plot.title = element_text(hjust = 0.5)) #设置标题居中
 plot_class1;
 eoffice::topptx(plot_class1,
-                filename = "F:/wangchenqi/CDSC/pictures/class1_NO_fanhua_C.pptx")
+                filename = "pictures/class1_NO_fanhua_C.pptx")
 
 # sample bar
 rm (list=ls ())
-setwd("F:/wangchenqi/CDSC/1scSimulate")
+setwd("1scSimulate")
 
-source("F:/wangchenqi/CDSC/CDSC.R")
-source("F:/wangchenqi/CDSC/CDSC_expand.R")
+source("CDSC.R")
+source("CDSC_expand.R")
 
 # myOneref <- intersect(Oneref,MethodName);myOneref=setdiff(myOneref,c("CDSC2"))
 # myTworef <- intersect(NoCref,MethodName);myTworef=union(c("CDSC3"),myTworef);myTworef=setdiff(myTworef,c("CDSC2"))
-a = gsub('.rds','',list.files("F:/wangchenqi/CDSC/1scSimulate/dataSimulate"));a
+a = gsub('.rds','',list.files("1scSimulate/dataSimulate"));a
 a = c("Nestorowa","Manno","Darmanis","Camp","Segerstolpe")
 scData = NULL
 result = NULL 
@@ -802,31 +822,31 @@ map_mean <- map %>%
 library(ggplot2)
 p1 <- ggplot()+ 
   geom_bar(data=map_mean,mapping=aes(x=factor(group,levels = a),y=mean,fill=group), # fill填充
-           position="dodge", # 柱状图格式
+           position="dodge", # 柱状图格弄1�7
            stat="identity", # 数据格式
            width = 0.7,
-           show.legend = F)+  # 柱状图尺寸
-  scale_fill_manual(values = c("#80AFBF","#80AFBF","#80AFBF","#80AFBF","#80AFBF"))+ # 柱状图颜色, "#DA635D","#B1938B"
-  # geom_signif(data=plot_data2,mapping=aes(x=group,y=SOD), # 不同组别的显著性
-  #             comparisons = list(c("C", "HT"), # 哪些组进行比较
+           show.legend = F)+  # 柱状图尺寄1�7
+  scale_fill_manual(values = c("#80AFBF","#80AFBF","#80AFBF","#80AFBF","#80AFBF"))+ # 柱状图颜艄1�7, "#DA635D","#B1938B"
+  # geom_signif(data=plot_data2,mapping=aes(x=group,y=SOD), # 不同组别的显著��1�7
+  #             comparisons = list(c("C", "HT"), # 哪些组进行比辄1�7
   #                                c("HI", "HT")),
   #             annotation=c("**"), # 显著性差异做标记
-  #             map_signif_level=T, # T为显著性，F为p value
-  #             tip_length=c(0.04,0.04,0.05,0.05), # 修改显著性那个线的长短
-  #             y_position = c(4100,3000), # 设置显著性线的位置高度
+  #             map_signif_level=T, # T为显著��，F为p value
+  #             tip_length=c(0.04,0.04,0.05,0.05), # 修改显著性那个线的长矄1�7
+  #             y_position = c(4100,3000), # 设置显著性线的位置高庄1�7
   #             size=1, # 修改线的粗细
-  #             textsize = 10, # 修改*标记的大小
-  #             test = "t.test")+ # 检验的类型
-  geom_errorbar(data=map_mean,mapping=aes(x = group,ymin = mean-sd, ymax = mean+sd), # 误差线添加
+  #             textsize = 10, # 修改*标记的大射1�7
+  #             test = "t.test")+ # 棢�验的类型
+  geom_errorbar(data=map_mean,mapping=aes(x = group,ymin = mean-sd, ymax = mean+sd), # 误差线添劄1�7
                 width = 0.1, #误差线的宽度
                 color = 'black', #颜色
                 size=0.8)+ #粗细
   scale_y_continuous(limits =c(0, 1.1) ,expand = c(0,0))+ # y轴的范围
-  theme_classic(  # 主题设置，这个是无线条主题
+  theme_classic(  # 主题设置，这个是无线条主预1�7
     base_line_size = 1 # 坐标轴的粗细
   )+
   
-  labs(title="",x="Dataset",y="Pearson of samples in P")+ # 添加标题，x轴，y轴内容
+  labs(title="",x="Dataset",y="Pearson of samples in P")+ # 添加标题，x轴，y轴内宄1�7
   theme(plot.title = element_text(size = 20,
                                   colour = "red",
                                   hjust = 0.5),
@@ -837,31 +857,31 @@ p1 <- ggplot()+
                                     vjust = 1.9, 
                                     hjust = 0.5, 
                                     angle = 90),
-        legend.title = element_text(color="black", # 修改图例的标题
+        legend.title = element_text(color="black", # 修改图例的标预1�7
                                     size=15, 
                                     face="bold"),
         legend.text = element_text(color="black", # 设置图例标签文字
                                    size = 10, 
                                    face = "bold"),
-        axis.text.x = element_text(size = 13,  # 修改X轴上字体大小，
+        axis.text.x = element_text(size = 13,  # 修改X轴上字体大小＄1�7
                                    # family = "myFont", # 类型
                                    color = "black", # 颜色
-                                   face = "bold", #  face取值：plain普通，bold加粗，italic斜体，bold.italic斜体加粗
+                                   face = "bold", #  face取��：plain普��，bold加粗，italic斜体，bold.italic斜体加粗
                                    vjust = 1, # 位置
                                    hjust = 1, 
                                    angle = 45), #角度
-        axis.text.y = element_text(size = 13,  # 修改y轴上字体大小，
+        axis.text.y = element_text(size = 13,  # 修改y轴上字体大小＄1�7
                                    # family = "myFont", # 类型
                                    color = "black", # 颜色
-                                   face = "bold", #  face取值：plain普通，bold加粗，italic斜体，bold.italic斜体加粗
+                                   face = "bold", #  face取��：plain普��，bold加粗，italic斜体，bold.italic斜体加粗
                                    vjust = 0.5, # 位置
                                    hjust = 0.5, 
                                    angle = 0) #角度
   ) 
-# emf(file = "SOD.emf") # 打开一个矢量图画布，这种格式的图片放在word里不会失真
+# emf(file = "SOD.emf") # 打开丢�个矢量图画布，这种格式的图片放在word里不会失眄1�7
 print(p1) # 打印图片
 eoffice::topptx(p1,
-                filename = "F:/wangchenqi/CDSC/pictures/class1_bar_NO_samples.pptx")
+                filename = "pictures/class1_bar_NO_samples.pptx")
 
 # ---- sample情况的散点图----
 library(ggplot2)
@@ -876,5 +896,5 @@ plot_class2 =  ggplot(map, aes(factor(group,levels=a),pearson,fill=group)) +  # 
   theme(axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),plot.background = element_rect(fill = "white"))    #panel.background = element_rect(fill = '#d8dfea')) # 底色
 # ggtitle("I'm a titile") +theme(plot.title = element_text(hjust = 0.5)) #设置标题居中
 plot_class2
-eoffice::topptx(plot_class2,filename = "F:/wangchenqi/CDSC/pictures/class1_boxplot_samples.pptx")
+eoffice::topptx(plot_class2,filename = "pictures/class1_boxplot_samples.pptx")
 
