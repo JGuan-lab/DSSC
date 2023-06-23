@@ -9,9 +9,12 @@ Given bulk expression matrix and referenced single-cell gene expression data (or
 The datasets analyzed in the paper are available at: https://doi.org/10.5281/zenodo.8020767
 
 ## 2. Quick start    
-Depends
+Depends:
+    
     R (>= 4.1.0) 
-Source
+
+Source:
+    
     rm (list=ls ())
     source("CDSC.R")
     source("function_help.R")
@@ -26,13 +29,17 @@ Source
 
 ### 2.2 Deconvolution
 Input data:
-    data_bulk: the input bulk data.
-    data_ref: the reference GEP matrix
+    data_bulk: the input bulk data;
+    
+    data_ref: the reference GEP matrix.
 
 The parameters used in SCDC:    
     lambda1 is used to constrain the sample-sample similarity matrix;
+    
     lambda2 is used to constrain the gene-gene similarity matrix;
-    lambdaC is used to constrain the GEP matrix.
+    
+    lambdaC is used to constrain the GEP matrix;
+    
     k: number of cell types used for matrix factorization initialization.
     
     retult <- CDSC(data_bulk = bulkData$Indata$T,
