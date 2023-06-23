@@ -25,14 +25,14 @@ Source:
     bulkData <- simulation(scData)
     
     # if one analyzes true data, please use:
-    # bulkData <- trueData 
+    bulkData <- trueData 
 
 ### 2.2 Deconvolution
 Input data:
-    data_bulk, the input bulk data;
-    data_ref, the reference GEP matrix.
+    data_bulk: the input bulk data;
+    data_ref: the reference GEP matrix.
 
-The parameters used in SCDC:    
+The parameters used in SCDC:
     lambda1 is used to constrain the sample-sample similarity matrix;
     lambda2 is used to constrain the gene-gene similarity matrix;
     lambdaC is used to constrain the GEP matrix;
@@ -46,7 +46,7 @@ The parameters used in SCDC:
                    lambdaC = 1000,
                    Ss = SM(t(scData$Indata$T)),
                    Sg = SM(scData$Indata$T))
-### 2.3 Evalution
+### 2.3 Evaluation
 
     ctlabels <- Row_label(data_bulk$Indata$C_ref,retult$c,leastnum = 3)
     rownames(retult$p) <- ctlabels
