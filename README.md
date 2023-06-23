@@ -8,15 +8,28 @@ Given bulk expression matrix and referenced single-cell gene expression data (or
 
 The datasets analyzed in the paper are available at: https://doi.org/10.5281/zenodo.8020767
 
-## Running the tests
-
+## 2. Quick start    
 ### Depends:
     R (>= 4.1.0) 
-### Input data:
+### Source
+    rm (list=ls ())
+    source("CDSC.R")
+    source("function_help.R")
+
+### 2.1 Prepare data
+    # if one generates simulated bulk data from single-cell data, please use:
+    scData <- list(data = readRDS("XXX.rds"), full_phenoData = readRDS("XXX_phenoData.rds"))
+    bulkData <- simulation(scData)
+    
+    # if one analyzes true data, please use:
+    # bulkData <- trueData 
+
+### 2.2 Deconvolution
+#### Input data:
     data_bulk: the input bulk data.
 
     data_ref: the reference GEP matrix
-### The parameter used in SCDC:
+#### The parameters used in SCDC:
     
     parameter: the vector of regularization parameters. 
     lambda1 is used to constrain the sample-sample similarity matrix;
@@ -24,23 +37,6 @@ The datasets analyzed in the paper are available at: https://doi.org/10.5281/zen
     lambdaC is used to constrain the GEP matrix.
     
     k: number of cell types used for matrix factorization initialization.
-    
-### Example:
-#### Source
-    rm (list=ls ())
-    source("CDSC.R")
-    source("function_help.R")
-
-#### Read data
-    scData <- list(data = readRDS("XXX.rds"), full_phenoData = readRDS("XXX_phenoData.rds"))
-
-#### Simulation
-    bulkData <- simulation(scData)
-    # if you analyze true data, please use:
-    # bulkData <- trueData 
-
-#### Deconvolution
-
     retult <- CDSC(data_bulk = bulkData$Indata$T,
                    data_ref = data_bulk$Indata$C_ref,  
                    k = dim(data_bulk$Indata$C_ref)[2], 
@@ -49,7 +45,7 @@ The datasets analyzed in the paper are available at: https://doi.org/10.5281/zen
                    lambdaC = 1000,
                    Ss = SM(t(scData$Indata$T)),
                    Sg = SM(scData$Indata$T))
-#### Evalution
+### 2.3 Evalution
 
     ctlabels <- Row_label(data_bulk$Indata$C_ref,retult$c,leastnum = 3)
     rownames(retult$p) <- ctlabels
