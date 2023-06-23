@@ -29,17 +29,13 @@ Source:
 
 ### 2.2 Deconvolution
 Input data:
-    data_bulk: the input bulk data;
-    
-    data_ref: the reference GEP matrix.
+    data_bulk, the input bulk data;
+    data_ref, the reference GEP matrix.
 
 The parameters used in SCDC:    
     lambda1 is used to constrain the sample-sample similarity matrix;
-    
     lambda2 is used to constrain the gene-gene similarity matrix;
-    
     lambdaC is used to constrain the GEP matrix;
-    
     k: number of cell types used for matrix factorization initialization.
     
     retult <- CDSC(data_bulk = bulkData$Indata$T,
