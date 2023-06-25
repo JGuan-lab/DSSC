@@ -4,7 +4,7 @@
 
 CDSC is a complete deconvolution algorithm, which estimates cell type-specific gene expression profiles (GEPs) and cell type density simultaneously from bulk samples by leveraging single-cell gene expression data. 
 
-Given bulk expression matrix and referenced single-cell gene expression data (or referenced GEPs), CDSC can compute cell-cell similarity matrix and gene-gene similarity matrix from the bulk matrix, and calculate the averaged gene expression of each cell type for reference from the single-cell data (or use the referenced GEPs directly). Then, CDSC performs deconvolution to infer cell type-specific GEPs and  cell type proportions of heterogeneous samples.
+Given bulk expression matrix and referenced single-cell gene expression data (or referenced GEPs), CDSC computes cell-cell similarity matrix and gene-gene similarity matrix from the bulk matrix, and calculates the averaged gene expression of each cell type for reference from the single-cell data (or uses the referenced GEPs directly). Then, CDSC performs deconvolution to infer cell type-specific GEPs and cell type proportions of heterogeneous samples.
 
 The datasets analyzed in the paper are available at: https://doi.org/10.5281/zenodo.8020767
 
