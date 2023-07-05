@@ -19,23 +19,21 @@ Source:
     source("function_help.R")
 
 ### 2.1 Prepare data
-    # if one generates simulated bulk data from single-cell data, please use:
+    # if you want to generate simulated bulk data from single-cell data, please use:
     scData <- list(data = readRDS("Segerstolpe.rds"), full_phenoData = readRDS("Segerstolpe_phenoData.rds"))
     bulkData <- simulation(scData)
 
-    # if one analyzes true data, please use:
-    bulkData <- trueData 
-    # bulkData <- readRDS("CellLines.rds")
+    # if you want to analyze true data we provide, please use:
+    bulkData <- readRDS("CellLines.rds")
 
-    # The following code is available if you want to build the bulkData yourself:
-    # You can calculate the reference GEP matrix from scData
+    # if you want to use your own single-cell data to generate referenced GEP matrix, please use:
     C_ref <- scSimulateC(scData,leastNum = 0,plotmarker = F,norm1 = "none",log2.threshold=log2(2))$C
-    # or you can alse use your signature
+    # or you can use a given referenced GEP:
     C_ref <- 'your signature'
     bulkData$Indata <- list(T = 'your bulk data',
                             C_ref = C_ref,
                             P = 'your groundtruth')
-    # To use CDSC correctly, please ensure that the genes of T and C_ref are the same
+    # To use CDSC correctly, please ensure that the genes of T and C_ref are the same.
 
 ### 2.2 Deconvolution
     
