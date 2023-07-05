@@ -1,4 +1,3 @@
-#
 #--------the first step of QC--------------
 QC_first <- function(data, full_phenoData){#
   require(dplyr); require(Matrix)

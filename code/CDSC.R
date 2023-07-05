@@ -47,7 +47,6 @@ CDSC <- function(data_bulk,data_ref, k, lambda1, lambda2,lambdaC,error= 10^-5,se
   if(storage.mode(data_bulk) != "double"){
     storage.mode(data_bulk) <- "double"
   }
-  
   gn <- dim(data_bulk)
   g <- gn[1]
   n <- gn[2]
