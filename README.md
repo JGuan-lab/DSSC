@@ -1,10 +1,10 @@
-# CDSC: complete deconvolution from bulk gene expression by leveraging single-cell RNA-seq data
+# DSSC: deconvolution from bulk gene expression by leveraging similarity and single-cell RNA-seq data
 
 ## 1. Introduction
 
-CDSC is a complete deconvolution algorithm, which estimates cell type-specific gene expression profiles (GEPs) and cell type density simultaneously from bulk samples by leveraging single-cell gene expression data. 
+DSSC is a deconvolution algorithm, which estimates cell type-specific gene expression profiles (GEPs) and cell type density simultaneously from bulk samples by leveraging single-cell gene expression data. 
 
-Given bulk expression matrix and referenced single-cell gene expression data (or referenced GEPs), CDSC computes cell-cell similarity matrix and gene-gene similarity matrix from the bulk matrix, and calculates the averaged gene expression of each cell type for reference from the single-cell data (or uses the referenced GEPs directly). Then, CDSC performs deconvolution to infer cell type-specific GEPs and cell type proportions of heterogeneous samples.
+Given bulk expression matrix and referenced single-cell gene expression data (or referenced GEPs), DSSC computes sample-sample similarity matrix and gene-gene similarity matrix from the bulk data, and calculates the averaged gene expression of each cell type for reference from the single-cell data (or uses the referenced GEPs directly). Then, DSSC performs deconvolution to infer cell type-specific GEPs and cell type proportions of heterogeneous samples.
 
 The datasets analyzed in the paper are available at: https://doi.org/10.5281/zenodo.8020767
 
@@ -15,7 +15,7 @@ Depends:
 
 Source:
     
-    source("CDSC.R")
+    source("DSSC.R")
     source("function_help.R")
 
 ### 2.1 Prepare data
@@ -33,7 +33,7 @@ Source:
     bulkData$Indata <- list(T = 'your bulk data',
                             C_ref = C_ref,
                             P = 'your groundtruth')
-    # To use CDSC correctly, please ensure that the genes of T and C_ref are the same.
+    # To use DSSC correctly, please ensure that the genes of T and C_ref are the same.
 
 ### 2.2 Deconvolution
     
@@ -44,7 +44,7 @@ Source:
     #lambdaC is used to constrain the GEP matrix
     #k: number of cell types used for matrix factorization initialization
     
-    retult <- CDSC(data_bulk = bulkData$Indata$T,
+    retult <- DSSC(data_bulk = bulkData$Indata$T,
                    data_ref = bulkData$Indata$C_ref,  
                    k = dim(bulkData$Indata$C_ref)[2], 
                    lambda1 = 1e-03, 
