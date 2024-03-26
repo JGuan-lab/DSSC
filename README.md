@@ -35,11 +35,11 @@ Source:
                             P = 'your groundtruth')
     # To use DSSC correctly, please ensure that the genes of T and C_ref are the same.
 
-### 2.2 Paramater
-    #Here, we recommend using a 5-fold cross validation parameter tuning method to obtain appropriate parameters. Of course, you can also change the settings of the tuning process according to the actual situation
+### 2.2 Tuning parameters
+    #We provide a k-fold cross validation function to help select the appropriate parameters. 
     #bulk: the input bulk data
     #dref: the reference GEP matrix
-    #k_folds: k_folds cross validatioin, set by default to 5
+    #k_folds: k_fold cross validatioin, set by default to 5
     #seedd: random seed, set by default to 1234
     #TerCondition: iteration termination condition, set by default to 10^-8,
     #lambda1: the range of parameter lambda1, set by default to (0,10^-3,10^-2,10^-1,1,10)
