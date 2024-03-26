@@ -1,6 +1,6 @@
 rm (list=ls ())
 set.seed(44)
-source("CDSC.R")
+source("DSSC.R")
 source("function_help.R")
 
 ##------------Intra-data----

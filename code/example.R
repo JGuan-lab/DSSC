@@ -21,13 +21,22 @@ bulkData$Indata <- list(T = 'your bulk data',
                         P = 'your groundtruth')
 # To use CDSC correctly, please ensure that the genes of T and C_ref are the same
 
+## Paramater
+para_table <- cross_validation(bulk = bulkData$Indata$T,
+                                ref = bulkData$Indata$C_ref,
+                                n_folds = 5,
+                                seedd = 1234)
+#you can chose other strategy, like "which.max(para_table$PCC.T)"
+lambda1 <- para_table$lambda1[which.min(para_table$RMSE.C)]
+lambda2 <- para_table$lambda2[which.min(para_table$RMSE.C)]
+lambdaC <- para_table$lambdaC[which.min(para_table$RMSE.C)]
+
 ## Deconvolution
 retult <- CDSC(data_bulk = bulkData$Indata$T, 
-               data_ref = bulkData$Indata$C_ref,  
-               k = dim(bulkData$Indata$C_ref)[2], 
-               lambda1 = 1e-03, 
-               lambda2 = 0e+00,
-               lambdaC = 1000,
+               data_ref = bulkData$Indata$C_ref,
+               lambda1 = lambda1, 
+               lambda2 = lambda2,
+               lambdaC = lambdaC,
                Ss = SM(t(scData$Indata$T)),
                Sg = SM(scData$Indata$T))
 ctlabels <- Row_label(bulkData$Indata$C_ref,retult$c,leastnum = 3)

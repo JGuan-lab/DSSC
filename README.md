@@ -35,7 +35,17 @@ Source:
                             P = 'your groundtruth')
     # To use DSSC correctly, please ensure that the genes of T and C_ref are the same.
 
-### 2.2 Deconvolution
+### 2.2 Paramater
+    para_table <- cross_validation(bulk = bulkData$Indata$T,
+                                ref = bulkData$Indata$C_ref,
+                                n_folds = 5,
+                                seedd = 1234)
+    #you can chose other strategy, like "which.max(para_table$PCC.T)"
+    lambda1 <- para_table$lambda1[which.min(para_table$RMSE.C)]
+    lambda2 <- para_table$lambda2[which.min(para_table$RMSE.C)]
+    lambdaC <- para_table$lambdaC[which.min(para_table$RMSE.C)]
+
+### 2.3 Deconvolution
     
     #data_bulk: the input bulk data
     #data_ref: the reference GEP matrix
@@ -46,16 +56,15 @@ Source:
     
     retult <- DSSC(data_bulk = bulkData$Indata$T,
                    data_ref = bulkData$Indata$C_ref,  
-                   k = dim(bulkData$Indata$C_ref)[2], 
-                   lambda1 = 1e-03, 
-                   lambda2 = 0e+00,
-                   lambdaC = 1000,
+                   lambda1 = lambda1, 
+                   lambda2 = lambda2,
+                   lambdaC = lambdaC,
                    Ss = SM(t(scData$Indata$T)),
                    Sg = SM(scData$Indata$T))
     ctlabels <- Row_label(bulkData$Indata$C_ref,retult$c,leastnum = 3)
     rownames(retult$p) <- ctlabels
     colnames(retult$c) <- ctlabels
                    
-### 2.3 Evaluation
+### 2.4 Evaluation
 
     getPearsonRMSE(retult$p, data_bulk$Indata$P)

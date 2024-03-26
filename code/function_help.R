@@ -992,14 +992,14 @@ Combine_2scdata_hard <- function(scData_1,scData_2,leastNum1=50,leastNum2=50, pl
 CountAllResults <- function(result,MyMethodName){
   print('there are methods:')
   MethodName <- names(result);MethodName
-  MatrixCref <- intersect(c("CDSC3","NNLS", "OLS" ,"FARDEEP", "CIBERSORT",        
+  MatrixCref <- intersect(c("DSSC3","NNLS", "OLS" ,"FARDEEP", "CIBERSORT",        
                             "deconRNASeq","RLR" ,"DCQ" ,"elastic_net" ,"ridge","lasso"  ,"EPIC"),MyMethodName)
   ScCref <- intersect(c("MuSiC","Bisque","SCDC","DWLS"),MyMethodName)
-  NoCref <- intersect(c("CDSC2","DSA" ,"ssKL" , "ssFrobenius","deconf" ,
+  NoCref <- intersect(c("DSSC2","DSA" ,"ssKL" , "ssFrobenius","deconf" ,
                         "TOAST" ,"Linseed","CellDistinguisher"),MyMethodName)
   
   result$all <- NULL
-  result$all <- result$CDSC3$result[4:9]
+  result$all <- result$DSSC3$result[4:9]
   myMatrixCref <- intersect(MatrixCref,MethodName)
   if(length( myMatrixCref ) != 0 ){
     for (i in 2:length(myMatrixCref)) {
@@ -1015,8 +1015,8 @@ CountAllResults <- function(result,MyMethodName){
   if(length( myNoCref ) != 0 ){
     num = nrow(result$all)
     for (i in (num+1):(num+length(myNoCref)) ) {
-      if(myNoCref[i-num] == "CDSC2"){
-        result$all[i,] <- result$CDSC2$result[4:9]
+      if(myNoCref[i-num] == "DSSC2"){
+        result$all[i,] <- result$DSSC2$result[4:9]
       }else{
         result$all[i,] <- cbind(result[[myNoCref[i-num]]]$result, matrix(0,1,6-length(result[[myNoCref[i-num]]]$result)))
       }

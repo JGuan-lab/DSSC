@@ -1,4 +1,4 @@
-#' Runs CDSC
+#' Runs DSSC
 #'
 #' @param data_bulk the input dropout bulk data.
 #'
@@ -26,30 +26,36 @@
 #' Default is F.
 #' 
 #' @examples
-#' # Set up the parameter and matrix used in CDSC
+#' # Set up the parameter and matrix used in DSSC
 #' Ss <- SM(t(data_bulk))
 #' Sg <- SM(data_bulk)
 #' lambda1 <- 1e-03
 #' lambda2 <- 1e+00
 #' lambdaC <- 1e+01
 #' 
-#' # Run CDSC
-#' result <- CDSC(data_bulk,data_ref,k,lambda1, lambda2, lambdaC, Ss, Sg)
+#' # Run DSSC
+#' result <- DSSC(data_bulk,data_ref,k,lambda1, lambda2, lambdaC, Ss, Sg)
 #'
 #' @return Two matrices, the first is the GEP matrix C, and the second is the cell type proportion matrix P
 #'
-#' @rdname CDSC
+#' @rdname DSSC
 #'
 #' @export
 
-CDSC <- function(data_bulk,data_ref, k, lambda1, lambda2,lambdaC,error= 10^-5,seedd=44,Ss,Sg,all_number = 500,ReturnL = F){
+DSSC <- function(data_bulk,data_ref, lambda1, lambda2,lambdaC,error= 10^-5,seedd=44,Ss,Sg,all_number = 500,ReturnL = F){
   data_bulk <- as.matrix(data_bulk)
   if(storage.mode(data_bulk) != "double"){
     storage.mode(data_bulk) <- "double"
   }
+  if (dim(data_ref) == NULL) {
+    k = data_ref
+    data_ref = 0
+  } else {
+    k = dim(data_ref)[2]
+  }
   gn <- dim(data_bulk)
   g <- gn[1]
-  n <- gn[2]
+  n <- gn[2] 
   # Ss <- SM(t(data_bulk))
   # Sg <- SM(data_bulk)
   set.seed(seedd)
@@ -127,4 +133,78 @@ simulation <- function(scData,leastNum=50, plotmarker = F,norm1 = "CPM",log2.thr
   scData$simulate1 <- scSimulateSplit(scData,leastNum=50, plotmarker = F,norm1 = "CPM",log2.threshold = 1)
   bulkData <- scSimulateShift(scData,"all",standardization=TRUE)
   return(bulkData)
+}
+cross_validation <- function(bulk, 
+                             ref,
+                             n_folds = 5,
+                             seedd = 44,
+                             TerCondition = 10^-8,
+                             lambda1 = c(0,10^-3,10^-2,10^-1,1,10),
+                             lambda2 = c(0,10^-3,10^-2,10^-1,1,10),
+                             lambdaC = c(0,10^-1,10^0,10^1,10^2,10^3),
+                             max_num = 1500){
+
+  # library(rBayesianOptimization)
+  set.seed(seedd)
+  vec <- vector()
+  for (i in 1:n_folds) {
+    vec <- c(vec, rep(i,nrow(bulk)*ncol(bulk)/n_folds))
+  }
+  sample_matrix <- matrix(sample(vec), nrow = nrow(bulk))
+  mask <- list();mask_test <- list()
+  for (i in 1:n_folds) {
+    mask[[i]] <- sample_matrix
+    mask[[i]][mask[[i]] == i] <- 0
+    mask[[i]][mask[[i]] > 0] <- 1
+    
+    mask_test[[i]] <- sample_matrix
+    mask_test[[i]][mask_test[[i]] != i] <- 0
+    mask_test[[i]][mask_test[[i]]  > 0] <- 1
+  }
+  pb <- txtProgressBar(style = 3)
+  star_time <- Sys.time()
+  Ss <- list();Sg <- list()
+  for (i in 1:n_folds) {
+    Ss[[i]] <- SM(t(bulk*mask[[i]]))
+    Sg[[i]] <- SM(bulk*mask[[i]])
+  }
+  num = 0
+  para_lambda_44_8 = NULL
+
+  library(dplyr)
+  for (dir_i in 1:length(lambda1)){
+    for (dir_j in 1:length(lambda2)){
+      for (dir_k in 1:length(lambdaC)){
+        result_CDSC <- list()
+        result1 <- data.frame(0,0,0,0)
+        for (i in 1:n_folds) {
+          result_CDSC[[i]] <- DSSC(bulk*mask[[i]],
+                                     ref,
+                                     lambda1[dir_i], lambda2[dir_j], lambdaC[dir_k],
+                                     TerCondition,seedd,
+                                     Ss[[i]],Sg[[i]],
+                                     max_num)
+          result_c <- result_CDSC[[i]][[1]]
+          result_p <- result_CDSC[[i]][[2]]
+          temp <- try(Row_label(result_c, as.matrix(ref), leastnum = 3),silent = FALSE)
+          if ('try-error' %in% class(temp)) {
+            ctlabels <- colnames(ref)
+          } else {
+            ctlabels <- Row_label(result_c, as.matrix(ref), leastnum = 3)
+          }
+          colnames(result_c) <- ctlabels
+          rownames(result_p) <- ctlabels
+          result1 = result1 + data.frame(getPearsonRMSE(ref, result_c),
+                                        getPearsonRMSE(bulk*mask_test[[i]], (result_c%*%result_p)*mask_test[[i]]))
+          num = num + 1
+        }
+        result1 = result1 / n_folds
+        para_lambda_44_8 =  rbind(para_lambda_44_8, data.frame(result1, lambda1[dir_i], lambda2[dir_j], lambdaC[dir_k]))
+        
+        setTxtProgressBar(pb, num/(length(lambda1)*length(lambda2)*length(lambdaC)*n_folds))
+      }
+    }
+  }
+  colnames(para_lambda_44_8) <- c("RMSE.C", "PCC.C", "RMSE.T", "PCC.T", "lambda1", "lambda2", "lambdaC")
+  return(para_lambda_44_8)
 }

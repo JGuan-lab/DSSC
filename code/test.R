@@ -1,6 +1,6 @@
 rm (list=ls ())
 
-source("CDSC.R")
+source("DSSC.R")
 source("function_help.R")
 
 #------data preparation----
@@ -28,10 +28,10 @@ result <- readRDS(paste(getwd(),"/dataResult/result_",STRING_name,".rds",sep="")
 
 result$all;dim(result$all)
 
-MyMethodName <- c("CDSC3","NNLS","OLS","FARDEEP","CIBERSORT" ,
+MyMethodName <- c("DSSC3","NNLS","OLS","FARDEEP","CIBERSORT" ,
                   "deconRNASeq","RLR","DCQ","elastic_net","ridge","lasso" ,"EPIC",
                   "MuSiC","Bisque","SCDC", "DWLS",
-                  "CDSC2","DSA","ssKL","ssFrobenius","deconf","TOAST","Linseed","CellDistinguisher")
+                  "DSSC2","DSA","ssKL","ssFrobenius","deconf","TOAST","Linseed","CellDistinguisher")
 result <- CountAllResults(result,MyMethodName)
 result$all;dim(result$all)
 # paste(getwd(),"/dataResult/result_",STRING_name,".rds",sep="")
@@ -40,8 +40,8 @@ result$all;dim(result$all)
 # paste(getwd(),"/dataResult/result_",STRING_name,".rds",sep="")
 # saveRDS(result,paste(getwd(),"/dataResult/result_",STRING_name,".rds",sep=""))
 
-# GetCorMatrix(result$CDSC3$dec$p,scData$Indata$P,matrix = "p")
-# diag(GetCorMatrix(result$CDSC3$dec$p,scData$Indata$P,matrix = "p"))
+# GetCorMatrix(result$DSSC3$dec$p,scData$Indata$P,matrix = "p")
+# diag(GetCorMatrix(result$DSSC3$dec$p,scData$Indata$P,matrix = "p"))
 # diag(cor(t(result$EPIC$p),t(scData$Indata$P)))
 # diag(cor(t(result$MuSiC$p),t(scData$Indata$P)))
 # diag(cor(t(result$linseed$p),t(scData$Indata$P)))
@@ -49,7 +49,7 @@ result$all;dim(result$all)
 #pheatMap of C's ct
 library(pheatmap)
 STRING_name
-map = GetCorMatrix(result$CDSC3$dec$c,scData$Indata$C,matrix = "c");map
+map = GetCorMatrix(result$DSSC3$dec$c,scData$Indata$C,matrix = "c");map
 plot_pheatmp <- pheatmap(map,cluster_row = FALSE,cluster_cols = FALSE
                          ,cellwidth = 15, cellheight =15#,gaps_row = c(12, 17)
                          ,fontsize = 6
@@ -77,60 +77,59 @@ result$all
 para_lambda_123 <- readRDS(paste(getwd(),"/paramater/para_lambda_",STRING_name,"_123.rds",sep=""))
 para_lambda_12 <- readRDS(paste(getwd(),"/paramater/para_lambda_",STRING_name,"_12.rds",sep=""))
 result$all
-result$CDSC3$result
-result$CDSC2$result
+result$DSSC3$result
+result$DSSC2$result
 
-#-------CDSC-------------
+#-------DSSC-------------
 result <- list()
-result$CDSC3$seedd = 44
-result$CDSC3$TerCondition = 10^-8
-result$CDSC3$Ss <- SM(t(scData$Indata$T))
-result$CDSC3$Sg <- SM(scData$Indata$T)
+result$DSSC3$seedd = 44
+result$DSSC3$TerCondition = 10^-8
+result$DSSC3$Ss <- SM(t(scData$Indata$T))
+result$DSSC3$Sg <- SM(scData$Indata$T)
 # 
-result$CDSC3$lambda1 <- 1e-03
-result$CDSC3$lambda2 <- 0e+00
-result$CDSC3$lambdaC <- 10000
+result$DSSC3$lambda1 <- 1e-03
+result$DSSC3$lambda2 <- 0e+00
+result$DSSC3$lambdaC <- 10000
 
 library(dplyr)
 
 
 
 # result
-result$CDSC3$dec = CDSC(scData$Indata$T, 
+result$DSSC3$dec = DSSC(scData$Indata$T, 
                           scData$Indata$C_ref, 
-                          dim(scData$Indata$C_ref)[2], 
-                          result$CDSC3$lambda1, 
-                          result$CDSC3$lambda2, 
-                          result$CDSC3$lambdaC,
-                          result$CDSC3$TerCondition,
-                          result$CDSC3$seedd,
-                          result$CDSC3$Ss,
-                          result$CDSC3$Sg,
+                          result$DSSC3$lambda1, 
+                          result$DSSC3$lambda2, 
+                          result$DSSC3$lambdaC,
+                          result$DSSC3$TerCondition,
+                          result$DSSC3$seedd,
+                          result$DSSC3$Ss,
+                          result$DSSC3$Sg,
                           all_number = 3000)
 
-result$CDSC3$result <- calculate_result(result$CDSC3$dec$c,result$CDSC3$dec$p,
+result$DSSC3$result <- calculate_result(result$DSSC3$dec$c,result$DSSC3$dec$p,
                             scData$Indata$T,scData$Indata$C,scData$Indata$C_ref,scData$Indata$P,
-                            result$CDSC3$lambda1, result$CDSC3$lambda2, result$CDSC3$lambdaC,
-                            number_iter = result$CDSC3$dec$jump,
-                            seedd = result$CDSC3$seedd,
-                            TerCondition = result$CDSC3$TerCondition)
-result$CDSC3$result
+                            result$DSSC3$lambda1, result$DSSC3$lambda2, result$DSSC3$lambdaC,
+                            number_iter = result$DSSC3$dec$jump,
+                            seedd = result$DSSC3$seedd,
+                            TerCondition = result$DSSC3$TerCondition)
+result$DSSC3$result
 
-result$CDSC2$lambda1 <- 1e-02
-result$CDSC2$lambda2 <- 1e+01
-result$CDSC2$lambdaC <- 0
-result$CDSC2$dec = CDSC(scData$Indata$T,  NULL, dim(scData$Indata$C_ref)[2], 
-                           result$CDSC2$lambda1, result$CDSC2$lambda2, result$CDSC2$lambdaC,
-                           result$CDSC3$TerCondition,result$CDSC3$seedd,
-                           result$CDSC3$Ss,result$CDSC3$Sg,all_number = 3000)
+result$DSSC2$lambda1 <- 1e-02
+result$DSSC2$lambda2 <- 1e+01
+result$DSSC2$lambdaC <- 0
+result$DSSC2$dec = DSSC(scData$Indata$T, dim(scData$Indata$C_ref)[2], 
+                           result$DSSC2$lambda1, result$DSSC2$lambda2, result$DSSC2$lambdaC,
+                           result$DSSC3$TerCondition,result$DSSC3$seedd,
+                           result$DSSC3$Ss,result$DSSC3$Sg,all_number = 3000)
 
-result$CDSC2$result <- calculate_result(result$CDSC2$dec$c,result$CDSC2$dec$p,
+result$DSSC2$result <- calculate_result(result$DSSC2$dec$c,result$DSSC2$dec$p,
                                          scData$Indata$T, scData$Indata$C, scData$Indata$C_ref, scData$Indata$P,
-                                         result$CDSC2$lambda1, result$CDSC2$lambda2, result$CDSC2$lambdaC,
-                                        number_iter = result$CDSC2$dec$jump,
-                                        seedd = result$CDSC3$seedd,
-                                        TerCondition = result$CDSC3$TerCondition)
-result$CDSC2$result
+                                         result$DSSC2$lambda1, result$DSSC2$lambda2, result$DSSC2$lambdaC,
+                                        number_iter = result$DSSC2$dec$jump,
+                                        seedd = result$DSSC3$seedd,
+                                        TerCondition = result$DSSC3$TerCondition)
+result$DSSC2$result
 # scData = Camp
 #----------NNLS----------
 require(nnls)
@@ -245,8 +244,8 @@ result$lasso$result
 # saveRDS(result,paste(getwd(),"/dataResult/result_",STRING_name,".rds",sep=""))
 
 #
-# source("CDSC.R")
-# source("CDSC_expand.R")
+# source("DSSC.R")
+# source("DSSC_expand.R")
 
 #----------EPIC----------
 require(EPIC)
@@ -597,10 +596,10 @@ result$CellDistinguisher$result
 
 
 #--------------all-----------------
-MyMethodName <- c("CDSC3","NNLS","OLS","FARDEEP","CIBERSORT" ,
+MyMethodName <- c("DSSC3","NNLS","OLS","FARDEEP","CIBERSORT" ,
                   "deconRNASeq","RLR","DCQ","elastic_net","ridge","lasso" ,"EPIC",
                   "MuSiC","Bisque","SCDC", "DWLS",
-                  "CDSC2","DSA","ssKL","ssFrobenius","deconf","TOAST","Linseed","CellDistinguisher")
+                  "DSSC2","DSA","ssKL","ssFrobenius","deconf","TOAST","Linseed","CellDistinguisher")
 result <- CountAllResults(result,MyMethodName)
 result$all;dim(result$all)
 paste(getwd(),"/dataResult/result_",STRING_name,".rds",sep="")
@@ -611,14 +610,14 @@ saveRDS(result,paste(getwd(),"/dataResult/result_",STRING_name,".rds",sep=""))
 lambda1 <- c(0,10^-3,10^-2,10^-1,1,10)
 lambda2 <- c(0,10^-3,10^-2,10^-1,1,10)
 lambdaC <- c(0,10^4,1,10^1,10^2,10^3)
-result$CDSC3$seedd = 44
+result$DSSC3$seedd = 44
 scData$Indata$TerCondition = 10^-8
 
 #------------cyclic to do deconvolution----------
 pb <- txtProgressBar(style = 3)
 star_time <- Sys.time()
-result$CDSC3$Ss <- SM(t(scData$Indata$T))
-result$CDSC3$Sg <- SM(scData$Indata$T)
+result$DSSC3$Ss <- SM(t(scData$Indata$T))
+result$DSSC3$Sg <- SM(scData$Indata$T)
 result_para_c = NULL
 result_para_p = NULL
 pearson_para_c = NULL
@@ -630,13 +629,13 @@ library(dplyr)
 for (dir_i in 1:length(lambda1)){
   for (dir_j in 1:length(lambda2)){
     for (dir_k in 1:length(lambdaC)){
-      result_CDSC = CDSC_3(scData$Indata$T, scData$Indata$C_ref, dim(scData$Indata$C_ref)[2], 
+      result_DSSC = DSSC_3(scData$Indata$T, scData$Indata$C_ref, dim(scData$Indata$C_ref)[2], 
                            lambda1[dir_i], lambda2[dir_j], lambdaC[dir_k],
-                           scData$Indata$TerCondition,result$CDSC3$seedd,
-                           result$CDSC3$Ss,result$CDSC3$Sg,all_number = 3000)
-      result_para_c[[num]] <- result_CDSC[[1]]
-      result_para_p[[num]] <- result_CDSC[[2]]
-      number_iter[num] <- result_CDSC[[3]]
+                           scData$Indata$TerCondition,result$DSSC3$seedd,
+                           result$DSSC3$Ss,result$DSSC3$Sg,all_number = 3000)
+      result_para_c[[num]] <- result_DSSC[[1]]
+      result_para_p[[num]] <- result_DSSC[[2]]
+      number_iter[num] <- result_DSSC[[3]]
       
       pearson_para_c[[num]] <- cor(result_para_c[[num]],scData$Indata$C_ref)
       result1 = NULL
@@ -646,7 +645,7 @@ for (dir_i in 1:length(lambda1)){
       result1 <- calculate_result(result_para_c[[num]],result_para_p[[num]],
                                   scData$Indata$T,scData$Indata$C,scData$Indata$C_ref,scData$Indata$P,
                                   lambda1[dir_i], lambda2[dir_j], lambdaC[dir_k],number_iter[num],
-                                  result$CDSC3$seedd,scData$Indata$TerCondition)
+                                  result$DSSC3$seedd,scData$Indata$TerCondition)
       # result
       # rownames(result) = 1:length(rownames(result))
       para_lambda_44_8 =  rbind(para_lambda_44_8,result1)
@@ -674,10 +673,10 @@ rm (list=ls ())
 
 a = c("Nestorowa","Manno","Darmanis","Camp","Segerstolpe")
 
-MyMethodName <- c("CDSC3","NNLS","OLS","FARDEEP","CIBERSORT" ,     
+MyMethodName <- c("DSSC3","NNLS","OLS","FARDEEP","CIBERSORT" ,     
                   "deconRNASeq","RLR","DCQ","elastic_net","ridge","lasso" ,"EPIC",          
                   "MuSiC","Bisque","SCDC", "DWLS",                      
-                  "CDSC2","DSA","ssKL","ssFrobenius","deconf","TOAST","Linseed","CellDistinguisher")
+                  "DSSC2","DSA","ssKL","ssFrobenius","deconf","TOAST","Linseed","CellDistinguisher")
 scData = NULL
 result = NULL 
 for(i in 1:length(a)){
@@ -763,7 +762,7 @@ eoffice::topptx(plot_class1,
 
 # boxplot----c-----
 mapBox <- NULL
-methodsNames2 <-  c("CDSC3","CDSC2", "DSA","ssKL" ,"ssFrobenius","deconf",
+methodsNames2 <-  c("DSSC3","DSSC2", "DSA","ssKL" ,"ssFrobenius","deconf",
                     "TOAST","Linseed","CellDistinguisher")
 map2 <- map[methodsNames2,]
 mapBox =  data.frame(pearson = map2[1,], method = rownames(map2)[1],row.names = NULL)
@@ -793,11 +792,11 @@ eoffice::topptx(plot_class1,
 rm (list=ls ())
 setwd("1scSimulate")
 
-source("CDSC.R")
-source("CDSC_expand.R")
+source("DSSC.R")
+source("DSSC_expand.R")
 
-# myOneref <- intersect(Oneref,MethodName);myOneref=setdiff(myOneref,c("CDSC2"))
-# myTworef <- intersect(NoCref,MethodName);myTworef=union(c("CDSC3"),myTworef);myTworef=setdiff(myTworef,c("CDSC2"))
+# myOneref <- intersect(Oneref,MethodName);myOneref=setdiff(myOneref,c("DSSC2"))
+# myTworef <- intersect(NoCref,MethodName);myTworef=union(c("DSSC3"),myTworef);myTworef=setdiff(myTworef,c("DSSC2"))
 a = gsub('.rds','',list.files("1scSimulate/dataSimulate"));a
 a = c("Nestorowa","Manno","Darmanis","Camp","Segerstolpe")
 scData = NULL
@@ -810,7 +809,7 @@ for(i in 1:length(a)){
 map = NULL
 for(i in 1:length(a)){
   map <- rbind(map,data.frame(group = a[i],
-                              pearson = GetSampleCor(result[[i]]$CDSC3$dec$p,scData[[i]]$Indata$P,matrix = "p")))
+                              pearson = GetSampleCor(result[[i]]$DSSC3$dec$p,scData[[i]]$Indata$P,matrix = "p")))
 }
 library(dplyr)
 map_mean <- map %>% 
