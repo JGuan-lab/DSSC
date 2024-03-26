@@ -36,9 +36,19 @@ Source:
     # To use DSSC correctly, please ensure that the genes of T and C_ref are the same.
 
 ### 2.2 Paramater
+    #Here, we recommend using a 5-fold cross validation parameter tuning method to obtain appropriate parameters. Of course, you can also change the settings of the tuning process according to the actual situation
+    #bulk: the input bulk data
+    #dref: the reference GEP matrix
+    #k_folds: k_folds cross validatioin, set by default to 5
+    #seedd: random seed, set by default to 1234
+    #TerCondition: iteration termination condition, set by default to 10^-8,
+    #lambda1: the range of parameter lambda1, set by default to (0,10^-3,10^-2,10^-1,1,10)
+    #lambda2: the range of parameter lambda2, set by default to (0,10^-3,10^-2,10^-1,1,10)
+    #lambdaC: the range of parameter lambdaC, set by default to (0,10^-1,10^0,10^1,10^2,10^3)
+    #max_num: maximum number of iterations, default set to 1500
     para_table <- cross_validation(bulk = bulkData$Indata$T,
                                 ref = bulkData$Indata$C_ref,
-                                n_folds = 5,
+                                k_folds = 5,
                                 seedd = 1234)
     #you can chose other strategy, like "which.max(para_table$PCC.T)"
     lambda1 <- para_table$lambda1[which.min(para_table$RMSE.C)]
