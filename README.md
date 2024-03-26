@@ -50,10 +50,10 @@ Source:
                                 ref = bulkData$Indata$C_ref,
                                 k_folds = 5,
                                 seedd = 1234)
-    #you can chose other strategy, like "which.max(para_table$PCC.T)"
-    lambda1 <- para_table$lambda1[which.min(para_table$RMSE.C)]
-    lambda2 <- para_table$lambda2[which.min(para_table$RMSE.C)]
-    lambdaC <- para_table$lambdaC[which.min(para_table$RMSE.C)]
+    #you can chose other strategy, like "which.min(para_table$RMSE.T)" especially when performing complete deconvolution
+    lambda1 <- para_table$lambda1[which.max(para_table$PCC.C)]
+    lambda2 <- para_table$lambda2[which.max(para_table$PCC.C)]
+    lambdaC <- para_table$lambdaC[which.max(para_table$PCC.C)]
 
 ### 2.3 Deconvolution
     
