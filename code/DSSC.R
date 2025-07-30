@@ -47,7 +47,7 @@ DSSC <- function(data_bulk,data_ref, lambda1, lambda2,lambdaC,error= 10^-5,seedd
   if(storage.mode(data_bulk) != "double"){
     storage.mode(data_bulk) <- "double"
   }
-  if (dim(data_ref) == NULL) {
+  if (is.null(dim(data_ref))) {
     k = data_ref
     data_ref = 0
   } else {
