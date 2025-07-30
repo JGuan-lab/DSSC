@@ -1,24 +1,38 @@
+## load libraries (install via install.R)
+library(dplyr)
+library(Matrix)
+library(limma)
+library(pheatmap)
+library(edgeR)
+library(scater)
+library(gtools)
+library(reshape2)
+library(data.table)
+library(scales)
+
 ## Source
-source("CDSC.R")
+source("DSSC.R")
 source("function_help.R")
 
 ## Prepare data
 # if one generates simulated bulk data from single-cell data, please use:
-scData <- list(data = readRDS("Segerstolpe.rds"), full_phenoData = readRDS("Segerstolpe_phenoData.rds"))
+scData <- list(data = readRDS("../datasets/Intra-data/Segerstolpe.rds"),
+               full_phenoData = readRDS("../datasets/Intra-data/Segerstolpe_phenoData.rds"))
 bulkData <- simulation(scData)
 
 # if one analyzes true data, please use:
-bulkData <- trueData 
+#bulkData <- trueData
 # bulkData <- readRDS("CellLines.rds")
 
 # The following code is available if you want to build the bulkData yourself:
 # You can calculate the reference GEP matrix from scData
-C_ref <- scSimulateC(scData,leastNum = 0,plotmarker = F,norm1 = "none",log2.threshold=log2(2))$C
+#C_ref <- scSimulateC(scData, leastNum = 0, plotmarker = FALSE, norm1 = "none",
+#                     log2.threshold=log2(2))$C
 # or you can alse use your signature
-C_ref <- 'your signature'
-bulkData$Indata <- list(T = 'your bulk data',
-                        C_ref = C_ref,
-                        P = 'your groundtruth')
+#C_ref <- 'your signature'
+#bulkData$Indata <- list(T = 'your bulk data',
+#                        C_ref = C_ref,
+#                        P = 'your groundtruth')
 # To use CDSC correctly, please ensure that the genes of T and C_ref are the same
 
 ## Paramater
