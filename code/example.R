@@ -32,17 +32,17 @@ lambda2 <- para_table$lambda2[which.max(para_table$PCC.C)]
 lambdaC <- para_table$lambdaC[which.max(para_table$PCC.C)]
 
 ## Deconvolution
-retult <- CDSC(data_bulk = bulkData$Indata$T, 
+result <- DSSC(data_bulk = bulkData$Indata$T,
                data_ref = bulkData$Indata$C_ref,
-               lambda1 = lambda1, 
+               lambda1 = lambda1,
                lambda2 = lambda2,
                lambdaC = lambdaC,
                Ss = SM(t(scData$Indata$T)),
                Sg = SM(scData$Indata$T))
-ctlabels <- Row_label(bulkData$Indata$C_ref,retult$c,leastnum = 3)
-rownames(retult$p) <- ctlabels
-colnames(retult$c) <- ctlabels
+ctlabels <- Row_label(bulkData$Indata$C_ref, result$c, leastnum = 3)
+rownames(result$p) <- ctlabels
+colnames(result$c) <- ctlabels
 
 ## Evalution
 # please ensure consistency in cell type
-getPearsonRMSE(retult$p, bulkData$Indata$P)
+getPearsonRMSE(result$p, bulkData$Indata$P)
