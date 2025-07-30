@@ -1,6 +1,5 @@
 #--------the first step of QC--------------
 QC_first <- function(data, full_phenoData){#
-    require(dplyr); require(Matrix)
     filterCells <- function(filterParam){
         cellsToRemove <- which(filterParam > median(filterParam) +
                                    3 * mad(filterParam) | filterParam < median(filterParam) -
@@ -33,7 +32,6 @@ QC_first <- function(data, full_phenoData){#
 #--------the second step of QC--------------
 QC_second <- function(data, full_phenoData, leastNum = 50){
     set.seed(24)
-    require(limma); require(dplyr); require(pheatmap)
     original_cell_names = colnames(data)
     colnames(data) <-
         as.character(full_phenoData$cellType[match(colnames(data),full_phenoData$cellID)])
@@ -89,10 +87,6 @@ Normalization <- function(data){
 #--------Find marker gene based on limma------------
 Find_markerGene_limma <- function(train, plotmarker = F,
                                   norm1 = "TMM",log2.threshold = 1){
-
-    library(limma)
-    library(dplyr)
-    library(scater)
     if(norm1 %in% c("cpm","CPM")){
         train2 <- calculateCPM(train)  #CPM  standardization
     }else if(norm1 %in% c("tmm","TMM")){
@@ -411,7 +405,6 @@ combine_2 <- function(RESULTS,P){
 
 #-------calculate the RMSE and Pearson-----
 getPearsonRMSE <- function(RESULTS,P){
-    library(dplyr)
     RESULTS = combine_2(RESULTS,P)
     RESULTS = RESULTS %>%
         dplyr::summarise(RMSE = sqrt(mean((observed_values-expected_values)^2)) %>%
@@ -636,7 +629,7 @@ calculate_pbmcs_result <- function(result_c,result_p,
 
     C = as.matrix(C[rownames(result_c),colnames(result_c)])
     P = as.matrix(P[rownames(result_p),colnames(result_p)])
-    library(dplyr)
+
     RESULT_c_all = combine_2( C,result_c)
     RESULT_c_all = RESULT_c_all %>%
         dplyr::summarise(RMSE = sqrt(mean((observed_values-expected_values)^2)) %>%
@@ -772,7 +765,6 @@ scSimulateSplit <- function(scData, leastNum=50, plotmarker = F,
     scData_simualte$refProfiles.var <- Get_C(scData_simualte$split$train)[[2]]
     scData_simualte$C <- Get_C(scData_simualte$split$test)[[1]]
     # use test data to cpmposite C
-    require(dplyr);
     colnames(scData_simualte$split$test) <- scData_simualte$original_cell_names[scData_simualte$split$testing]
 
     generator <- Generator(sce = scData_simualte$split$test, phenoData = scData_simualte$split$pData_test,
@@ -824,7 +816,6 @@ scSimulateShift <- function(scData, marker_strategy = "all",standardization = TR
     scData$Indata$C_ref = as.matrix(scData$Indata$C_ref)
 
     #------------standardization----------
-    library(scater)
     if(standardization){
         scData$Indata$T <- calculateCPM(scData$Indata$T)
         scData$Indata$C <- calculateCPM(scData$Indata$C)
@@ -865,7 +856,6 @@ BulkMixturesShift <- function(bulkData, marker_strategy = "all"){
     bulkData$Indata$C_ref = as.matrix(bulkData$Indata$C_ref)
 
     #------------standardization----------
-    library(scater)
     bulkData$Indata$T <- calculateCPM(bulkData$Indata$T)
     bulkData$Indata$C_ref <- calculateCPM(bulkData$Indata$C_ref)
     length(which(colSums(bulkData$Indata$P) == 1))
@@ -919,7 +909,6 @@ Combine_2scdata_dream <- function(scData_1,scData_2,leastNum1=50,leastNum2=50, p
     ComDate$C <- Get_C(ComDate$Test$data)[[1]]
 
     # simulate T,P from test data
-    require(dplyr);
     colnames(ComDate$Test$data) <- ComDate$Test$original_cell_names
     generator <- Generator(sce = ComDate$Test$data, phenoData = ComDate$Test$pData, Num.mixtures, pool.size)
     ComDate$T <- generator[["T"]]
@@ -943,7 +932,6 @@ Combine_2scdata_dream <- function(scData_1,scData_2,leastNum1=50,leastNum2=50, p
     # ComDate$indata$T <- ComDate$indata$T[, colnames(ComDate$P)]
 
     # CPM
-    library(scater)
     if(norm1 %in% c("cpm","CPM")){
         ComDate$indata$T <- as.matrix(calculateCPM(ComDate$indata$T))
         ComDate$indata$C <- as.matrix(calculateCPM(ComDate$indata$C))
@@ -964,7 +952,6 @@ Combine_2scdata_dream <- function(scData_1,scData_2,leastNum1=50,leastNum2=50, p
 
 
 CutCTofscDATA <- function(data,cutCT=c("unknown")){
-    library(dplyr)
     if(cutCT %in% unique(data$pData$cellType)){
         #
         keepCell <- which(data$pData$cellType != cutCT);length(keepCell)
@@ -1038,7 +1025,6 @@ Combine_2scdata_hard <- function(scData_1,scData_2,leastNum1=50,leastNum2=50,
     ComDate$C <- Get_C(ComDate$Test$data)[['C_ref']]
 
     # simulate T,P from test data
-    require(dplyr);
     colnames(ComDate$Test$data) <- ComDate$Test$original_cell_names
     generator <- Generator(sce = ComDate$Test$data, phenoData = ComDate$Test$pData, Num.mixtures, pool.size)
     ComDate$T <- generator[["T"]]
@@ -1057,7 +1043,6 @@ Combine_2scdata_hard <- function(scData_1,scData_2,leastNum1=50,leastNum2=50,
 
 
     # CPM
-    library(scater)
     if(norm1 %in% c("cpm","CPM")){
         ComDate$indata$T <- calculateCPM(as.matrix(ComDate$indata$T))
         ComDate$indata$C <- calculateCPM(as.matrix(ComDate$indata$C))
@@ -1143,7 +1128,6 @@ squash_axis <- function(from, to, factor) {
     #   from: left end of the axis
     #   to: right end of the axis
     #   factor: the compression factor of the range [from, to]
-    library(scales)
     trans <- function(x) {
         # get indices for the relevant regions
         isq <- x > from & x < to

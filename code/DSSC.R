@@ -173,7 +173,6 @@ cross_validation <- function(bulk,
     num = 0
     para_lambda_44_8 = NULL
 
-    library(dplyr)
     for (dir_i in 1:length(lambda1)){
         for (dir_j in 1:length(lambda2)){
             for (dir_k in 1:length(lambdaC)){
