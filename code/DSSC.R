@@ -105,17 +105,17 @@ SM <- function(A){
 }
 
 
-# NORM <- function(A){
-#   v <- colSums(A)
-#   for (i in 1:length(v)) {
-#     if(v[i]!=0){
-#       A[,i] <- A[,i]/v[i]
-#     }
-#   }
-#   # d <- diag(v)
-#   # A <- A%*%solve(d)
-#   return(A)
-# }
+NORM <- function(A){
+   v <- colSums(A)
+   for (i in 1:length(v)) {
+     if(v[i]!=0){
+       A[,i] <- A[,i]/v[i]
+     }
+   }
+   d <- diag(v)
+   A <- A%*%solve(d)
+ return(A)
+}
 
 # Make the sum of cell types corresponding to the proportional matrix sample one
 SumEqual_1 <- function(p){
