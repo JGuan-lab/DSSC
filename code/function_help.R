@@ -260,9 +260,10 @@ Generator <- function(sce, phenoData, Num.mixtures = 1000, pool.size = 100, min.
   P = do.call(rbind.data.frame, Proportions)
   T = do.call(cbind.data.frame, Tissues)
   
-  P = data.table::dcast(P, CT ~ mix, 
+
+  P = data.table::dcast(data.table::setDT(P), CT ~ mix,
                         value.var = "expected",
-                        fun.aggregate = sum) %>% data.frame(.,row.names = 1) 
+                        fun.aggregate = sum) %>% data.frame(.,row.names = 1)
   P = P[,gtools::mixedsort(colnames(P))]
   return(list(T = T, P = P))
   
