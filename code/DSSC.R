@@ -144,7 +144,7 @@ cross_validation <- function(bulk,
                              lambda2 = c(0,10^-3,10^-2,10^-1,1,10),
                              lambdaC = c(0,10^-1,10^0,10^1,10^2,10^3),
                              max_num = 1500){
-
+    start_time = Sys.time()
     # library(rBayesianOptimization)
     set.seed(seedd)
     vec <- vector()
@@ -187,8 +187,8 @@ cross_validation <- function(bulk,
                                              max_num)
                     result_c <- result_CDSC[[i]][[1]]
                     result_p <- result_CDSC[[i]][[2]]
-                    temp <- try(Row_label(result_c, as.matrix(ref), leastnum = 3),silent = FALSE)
-                    if ('try-error' %in% class(temp)) {
+                    temp <- try(Row_label(result_c, as.matrix(ref), leastnum = 3),silent = T)
+                    if (inherits(temp, "try-error")) {
                         ctlabels <- colnames(ref)
                     } else {
                         ctlabels <- Row_label(result_c, as.matrix(ref), leastnum = 3)
@@ -202,10 +202,14 @@ cross_validation <- function(bulk,
                 result1 = result1 / n_folds
                 para_lambda_44_8 =  rbind(para_lambda_44_8, data.frame(result1, lambda1[dir_i], lambda2[dir_j], lambdaC[dir_k]))
 
+
                 setTxtProgressBar(pb, num/(length(lambda1)*length(lambda2)*length(lambdaC)*n_folds))
             }
         }
     }
     colnames(para_lambda_44_8) <- c("RMSE.C", "PCC.C", "RMSE.T", "PCC.T", "lambda1", "lambda2", "lambdaC")
+
+    end_time = Sys.time()
+    print(end_time - start_time)
     return(para_lambda_44_8)
 }
