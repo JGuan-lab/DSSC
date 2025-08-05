@@ -202,11 +202,13 @@ cross_validation <- function(bulk,
                 result1 = result1 / n_folds
                 para_lambda_44_8 =  rbind(para_lambda_44_8, data.frame(result1, lambda1[dir_i], lambda2[dir_j], lambdaC[dir_k]))
 
+
                 setTxtProgressBar(pb, num/(length(lambda1)*length(lambda2)*length(lambdaC)*n_folds))
             }
         }
     }
     colnames(para_lambda_44_8) <- c("RMSE.C", "PCC.C", "RMSE.T", "PCC.T", "lambda1", "lambda2", "lambdaC")
+
     end_time = Sys.time()
     print(end_time - start_time)
     return(para_lambda_44_8)

@@ -296,6 +296,7 @@ marker_strategies <- function(marker_distrib, marker_strategy, C){
         markers = marker_distrib %>% dplyr::filter(log2FC > 0) %>%
             dplyr::arrange(CT, desc(log2FC)) %>%
             group_by(CT) %>%
+
             dplyr::top_n(ceiling(n()*0.25), wt=log2FC) %>% as.data.frame()
 
     } else if (marker_strategy == "top_50p_logFC"){
