@@ -8,6 +8,10 @@ Given bulk expression matrix and referenced single-cell gene expression data (or
 
 The datasets analyzed in the paper are available at: https://doi.org/10.5281/zenodo.8020767
 
+DSSC corresponds to the following paper:
+
+Chenqi Wang#, Yifan Lin#, Shuchao Li, Jinting Guan* (2024). Deconvolution from Bulk Gene Expression by Leveraging Sample-wise and Gene-wise Similarities and Single-cell RNA-Seq Data. BMC Genomics, 25, 875.
+
 ## 2. Quick start    
 Depends:
     
