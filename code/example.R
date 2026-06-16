@@ -15,6 +15,7 @@ source("DSSC.R")
 source("function_help.R")
 
 ## Prepare data
+
 # If one generates simulated bulk data from single-cell data, please use:
 scData <- list(data = readRDS("./Segerstolpe.rds"),
                full_phenoData = readRDS("./Segerstolpe_phenoData.rds"))
@@ -28,11 +29,13 @@ bulkData <- simulation(scData)
 # You can calculate the reference GEP matrix from scData
 #C_ref <- scSimulateC(scData, leastNum = 0, plotmarker = FALSE, norm1 = "none",
 #                     log2.threshold=log2(2))$C
+
 # or you can also use your signature
 #C_ref <- 'your signature'
 #bulkData$Indata <- list(T = 'your bulk data',
 #                        C_ref = C_ref,
 #                        P = 'your groundtruth')
+
 # To use DSSC correctly, please ensure that the genes of T and C_ref are the same
 
 ## Paramater
@@ -64,6 +67,7 @@ result <- DSSC(data_bulk = bulkData$Indata$T,
                lambdaC = lambdaC,
                Ss = SM(t(bulkData$Indata$T)),
                Sg = SM(bulkData$Indata$T))
+              
 
 # ===================================================================================================================
 # =============================Quick start for DSSC deconvolution====================================================
@@ -87,6 +91,7 @@ rownames(result$p) <- ctlabels
 colnames(result$c) <- ctlabels
 
 ## Evalution
+
 # Please ensure consistency in cell type
 getPearsonRMSE(result$p, bulkData$Indata$P)
 getPearsonRMSE(result$c, bulkData$Indata$C)
